@@ -66,7 +66,7 @@ class PouchCLI {
     }
 
     try {
-      // 通过状态机执行命令
+      // 通过状态机执行命令！！！
       const result = await this.stateMachine.transition(commandName, args)
 
       // 只在非静默模式下输出（避免干扰MCP协议）
@@ -87,124 +87,6 @@ class PouchCLI {
       }
       throw error
     }
-  }
-
-  /**
-   * 获取帮助信息
-   * @returns {string} 帮助文本
-   */
-  getHelp () {
-    const commands = this.registry.getCommandDetails()
-    const currentState = this.stateMachine.getCurrentState()
-    const availableTransitions = this.stateMachine.getAvailableTransitions()
-
-    let help = `
-🎯 PromptX 锦囊系统帮助
-========================
-
-当前状态: ${currentState}
-可用转换: ${availableTransitions.join(', ')}
-
-📋 可用命令:
-`
-
-    for (const cmd of commands) {
-      help += `\n  ${cmd.name.padEnd(12)} - ${cmd.purpose}`
-    }
-
-    help += `
-
-💡 使用示例:
-        ${COMMANDS.INIT}              # 初始化工作环境
-        ${COMMANDS.DISCOVER}          # 发现可用角色
-        ${COMMANDS.ACTION} copywriter # 激活文案专家
-        ${COMMANDS.LEARN} scrum       # 学习敏捷知识
-        ${COMMANDS.RECALL} frontend   # 检索前端记忆
-
-🔄 PATEOAS 导航:
-每个命令执行后都会提供下一步的建议操作，
-按照提示即可完成完整的工作流程。
-
-📚 更多信息请访问: https://github.com/yourusername/promptx
-`
-
-    return help
-  }
-
-  /**
-   * 获取当前状态信息
-   * @returns {StateContext} 状态上下文
-   */
-  getStatus () {
-    return {
-      currentState: this.stateMachine.getCurrentState(),
-      availableCommands: this.registry.list(),
-      availableTransitions: this.stateMachine.getAvailableTransitions(),
-      context: this.stateMachine.context,
-      initialized: this.initialized
-    }
-  }
-
-  /**
-   * 解析命令行输入
-   * @param {string} input - 用户输入
-   * @returns {Object} 解析结果
-   */
-  parseCommand (input) {
-    const parts = input.trim().split(/\s+/)
-    const command = parts[0]
-    const args = parts.slice(1)
-
-    return {
-      command,
-      args
-    }
-  }
-
-  /**
-   * 运行交互式CLI
-   */
-  async runInteractive () {
-    logger.info(' 欢迎使用 PromptX 锦囊系统！')
-    logger.info('输入 "help" 查看帮助，"exit" 退出\n')
-
-    const readline = require('readline')
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      prompt: 'promptx> '
-    })
-
-    rl.prompt()
-
-    rl.on('line', async (line) => {
-      const input = line.trim()
-
-      if (input === 'exit' || input === 'quit') {
-        logger.info('再见！')
-        rl.close()
-        return
-      }
-
-      if (input === 'help') {
-        logger.info(this.getHelp())
-      } else if (input === 'status') {
-        logger.info(JSON.stringify(this.getStatus(), null, 2))
-      } else if (input) {
-        const { command, args } = this.parseCommand(input)
-        try {
-          await this.execute(command, args)
-        } catch (error) {
-          logger.error(error.message)
-        }
-      }
-
-      rl.prompt()
-    })
-
-    rl.on('close', () => {
-      process.exit(0)
-    })
   }
 }
 

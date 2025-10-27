@@ -31,13 +31,5 @@ module.exports = {
   // 便捷方法
   execute: async (commandName, args) => {
     return await cli.execute(commandName, args)
-  },
-
-  help: () => {
-    return cli.getHelp()
-  },
-
-  status: () => {
-    return cli.getStatus()
   }
 }
