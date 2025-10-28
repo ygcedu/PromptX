@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "streamable-mcp-server": {
+      "url": "http://127.0.0.1:12306/mcp"
+    },
+    "promptx": {
+      "type": "streamable-http",
+      "url": "http://127.0.0.1:5203/mcp"
+    }
+  }
+}

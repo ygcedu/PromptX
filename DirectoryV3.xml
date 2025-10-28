@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <trees>
+     <tree path="/packages/core/src/pouch" title="锦囊框架" extension="" presentableText="" tooltipTitle="" icon=""
+           textColor="" backgroundColor=""/>
+     <tree path="/packages/core/src/pouch/commands" title="锦囊命令"/>
+     <tree path="/packages/core/src/cognition" title="认知系统"/>
+     <tree path="/packages/core/src/resource" title="资源管理"/>
+     <tree path="/packages/core/src/cognition/Network.js" title="认知图结构"/>
+     <tree path="/packages/core/src/cognition/Memory.js" title="SQLite 持久化存储"/>
+     <tree path="/packages/core/src/cognition/Mind.js" title="当前激活状态"/>
+     <tree path="/packages/core/src/cognition/CognitionSystem.js" title="认知系统实例"/>
+     <tree path="/packages/core/src/cognition/CognitionManager.js" title="认知工厂"/>
+     <tree path="/packages/core/src/cognition/Prime.js" title="认知系统启动引擎"/>
+    <tree path="/packages/core/src/cognition/Cue.js" title="认知线索"/>
+    <tree path="/packages/core/src/cognition/Engram.js" title="记忆痕迹"/>
+    <tree path="/packages/core/src/cognition/Recall.js" title="检索记忆"/>
+    <tree path="/packages/core/src/cognition/Remember.js" title="保存记忆"/>
+</trees>

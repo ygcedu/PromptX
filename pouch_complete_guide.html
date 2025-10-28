@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptX Pouch 完整指南</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 3em;
+            font-weight: 300;
+        }
+        
+        .subtitle {
+            margin: 15px 0 0 0;
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+        
+        .nav-tabs {
+            background: #34495e;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-tab {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-tab.active {
+            background: rgba(255,255,255,0.2);
+            border-bottom-color: #3498db;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* 架构层级样式 */
+        .layer {
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .layer-header {
+            padding: 15px 25px;
+            font-weight: bold;
+            font-size: 1.3em;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .layer-content {
+            padding: 25px;
+            background: #f8f9fa;
+        }
+        
+        /* 不同层级的颜色 */
+        .cli-layer .layer-header { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .registry-layer .layer-header { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .state-layer .layer-header { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .command-layer .layer-header { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .architecture-layer .layer-header { background: linear-gradient(135deg, #27ae60, #229954); }
+        .areas-layer .layer-header { background: linear-gradient(135deg, #16a085, #138d75); }
+        
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .component {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .component:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .component h4 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+        
+        .component p {
+            margin: 0;
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+        
+        .component.core { border-left-color: #e74c3c; }
+        .component.registry { border-left-color: #3498db; }
+        .component.state { border-left-color: #9b59b6; }
+        .component.command { border-left-color: #f39c12; }
+        .component.layer { border-left-color: #27ae60; }
+        .component.area { border-left-color: #16a085; }
+        
+        /* 锦囊组成结构 */
+        .pouch-structure {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .structure-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .structure-card h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1.3em;
+        }
+        
+        .component-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .component-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .component-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .component-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        
+        /* 锦囊输出格式 */
+        .output-format {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .output-layers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .output-layer {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .output-layer.purpose { border-left-color: #e74c3c; }
+        .output-layer.content { border-left-color: #27ae60; }
+        .output-layer.pateoas { border-left-color: #f39c12; }
+        
+        .output-layer h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .output-layer p {
+            margin: 0;
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+        
+        /* 状态流程图 */
+        .flow-diagram {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .flow-step {
+            display: inline-block;
+            background: white;
+            border: 2px solid #3498db;
+            border-radius: 25px;
+            padding: 15px 25px;
+            margin: 10px;
+            position: relative;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .flow-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: #3498db;
+        }
+        
+        /* 架构对比 */
+        .architecture-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .arch-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 2px solid #ecf0f1;
+        }
+        
+        .arch-card h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .arch-flow {
+            margin: 15px 0;
+        }
+        
+        .arch-flow .flow-step {
+            display: block;
+            margin: 8px 0;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px 15px;
+        }
+        
+        .arch-flow .flow-step:not(:last-child)::after {
+            content: '↓';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #3498db;
+            font-size: 1.2em;
+        }
+        
+        /* 项目锦囊列表 */
+        .pouches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+        
+        .pouch-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .pouch-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .pouch-card.project { border-left-color: #e74c3c; }
+        .pouch-card.discover { border-left-color: #3498db; }
+        .pouch-card.action { border-left-color: #f39c12; }
+        .pouch-card.learn { border-left-color: #27ae60; }
+        .pouch-card.recall { border-left-color: #9b59b6; }
+        .pouch-card.remember { border-left-color: #16a085; }
+        .pouch-card.think { border-left-color: #e67e22; }
+        .pouch-card.tool { border-left-color: #34495e; }
+        
+        .pouch-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .pouch-icon {
+            font-size: 2em;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .pouch-title {
+            flex: 1;
+        }
+        
+        .pouch-title h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.3em;
+        }
+        
+        .pouch-title .command {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+            background: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        
+        .pouch-description {
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .pouch-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .pouch-features li {
+            padding: 5px 0;
+            color: #2c3e50;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .pouch-features li::before {
+            content: '✓';
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        /* 命令网格 */
+        .commands-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .command-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #ecf0f1;
+            transition: all 0.3s ease;
+        }
+        
+        .command-item:hover {
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+        }
+        
+        .command-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .command-desc {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        /* 图例 */
+        .legend {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .legend h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .pouch-structure,
+            .architecture-comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            .pouches-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .output-layers {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 PromptX Pouch 完整指南</h1>
+            <p class="subtitle">基于 PATEOAS 的 AI-First CLI 框架 - 架构分析与锦囊组成</p>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('overview')">📋 概览</button>
+            <button class="nav-tab" onclick="showTab('architecture')">🏗️ 架构</button>
+            <button class="nav-tab" onclick="showTab('composition')">🧩 组成</button>
+            <button class="nav-tab" onclick="showTab('pouches')">📦 锦囊</button>
+            <button class="nav-tab" onclick="showTab('features')">🌟 特性</button>
+        </div>
+        
+        <div class="content">
+            <!-- 概览标签页 -->
+            <div id="overview" class="tab-content active">
+                <div class="section">
+                    <h2 class="section-title">
+                        <span>🎯</span>
+                        PromptX Pouch 框架概览
+                    </h2>
+                    
+                    <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+                        <h3 style="color: #2c3e50; margin-bottom: 20px;">🧠 核心理念</h3>
+                        <p style="font-size: 1.1em; line-height: 1.8; color: #34495e;">
+                            PromptX Pouch 框架实现了<strong>"诸葛锦囊"</strong>的设计模式，基于 <strong>PATEOAS (Prompt as the Engine of Application State)</strong> 理念，
+                            每个锦囊都是自包含的专家知识单元，通过状态驱动的导航系统实现AI工作流程的智能串联。
+                        </p>
+                    </div>
+                    
+                    <div class="pouch-structure">
+                        <div class="structure-card">
+                            <h3>🏗️ 核心组件</h3>
+                            <ul class="component-list">
+                                <li>
+                                    <div class="component-icon" style="background: #e74c3c;"></div>
+                                    <strong>BasePouchCommand</strong> - 锦囊基类
+                                </li>
+                                <li>
+                                    <div class="component-icon" style="background: #3498db;"></div>
+                                    <strong>Purpose</strong> - 锦囊目的说明
+                                </li>
+                                <li>
+                                    <div class="component-icon" style="background: #27ae60;"></div>
+                                    <strong>Content</strong> - 锦囊核心内容
+                                </li>
+                                <li>
+                                    <div class="component-icon" style="background: #f39c12;"></div>
+                                    <strong>PATEOAS</strong> - 导航信息
+                                </li>
+                                <li>
+                                    <div class="component-icon" style="background: #9b59b6;"></div>
+                                    <strong>StateContext</strong> - 状态上下文
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="structure-card">
+                            <h3>🎨 渲染架构</h3>
+                            <ul class="component-list">
+                                <li>
+                                    <div class="component-icon" style="background: #16a085;"></div>
+                                    <strong>Areas</strong> - 内容区域（兼容模式）
+                                </li>
+                                <li>
+                                    <div class="component-icon" style="background: #e67e22;"></div>
+                                    <strong>Layers</strong> - 认知层次（新架构）
+                                </li>
+                                <li>
+                                    <div class="component-icon" style="background: #34495e;"></div>
+                                    <strong>Renderer</strong> - 渲染管道
+                                </li>
+                                <li>
+                                    <div class="component-icon" style="background: #8e44ad;"></div>
+                                    <strong>Formatter</strong> - 输出格式化
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="output-format">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 锦囊输出格式 (PouchOutput)</h3>
+                        <p>每个锦囊都遵循统一的三层输出结构，确保AI能够理解和使用：</p>
+                        
+                        <div class="output-layers">
+                            <div class="output-layer purpose">
+                                <h4>🎯 Purpose (目的)</h4>
+                                <p>说明锦囊的作用和使用场景，让AI明确当前锦囊的功能定位。</p>
+                            </div>
+                            
+                            <div class="output-layer content">
+                                <h4>📝 Content (内容)</h4>
+                                <p>锦囊的核心内容，包括提示词、知识、指令等，是锦囊的主体部分。</p>
+                            </div>
+                            
+                            <div class="output-layer pateoas">
+                                <h4>🧭 PATEOAS (导航)</h4>
+                                <p>下一步可执行的动作列表，实现状态驱动的导航系统。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 架构标签页 -->
+            <div id="architecture" class="tab-content">
+                <div class="section">
+                    <h2 class="section-title">
+                        <span>🏗️</span>
+                        框架架构层次
+                    </h2>
+                    
+                    <!-- CLI 入口层 -->
+                    <div class="layer cli-layer">
+                        <div class="layer-header">
+                            <span>🚀 CLI 入口层 (Entry Layer)</span>
+                            <span>核心接口</span>
+                        </div>
+                        <div class="layer-content">
+                            <div class="component-grid">
+                                <div class="component core">
+                                    <h4>PouchCLI</h4>
+                                    <p>CLI主入口，提供命令行接口和统一的执行入口。负责初始化、命令解析和交互式模式。</p>
+                                </div>
+                                <div class="component core">
+                                    <h4>index.js</h4>
+                                    <p>框架导出模块，提供便捷的API接口，包括execute()、help()、status()等方法。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 注册管理层 -->
+                    <div class="layer registry-layer">
+                        <div class="layer-header">
+                            <span>📋 注册管理层 (Registry Layer)</span>
+                            <span>命令管理</span>
+                        </div>
+                        <div class="layer-content">
+                            <div class="component-grid">
+                                <div class="component registry">
+                                    <h4>PouchRegistry</h4>
+                                    <p>锦囊命令注册器，负责管理和注册所有锦囊命令，提供命令验证和查询功能。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 状态管理层 -->
+                    <div class="layer state-layer">
+                        <div class="layer-header">
+                            <span>🔄 状态管理层 (State Layer)</span>
+                            <span>状态转换</span>
+                        </div>
+                        <div class="layer-content">
+                            <div class="component-grid">
+                                <div class="component state">
+                                    <h4>PouchStateMachine</h4>
+                                    <p>状态机管理器，负责管理锦囊之间的状态转换，维护历史记录和上下文信息。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flow-diagram">
+                                <div class="flow-step">initial</div>
+                                <div class="flow-step">initialized</div>
+                                <div class="flow-step">discovering</div>
+                                <div class="flow-step">activated</div>
+                                <div class="flow-step">learned</div>
+                                <div class="flow-step">recalled</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 命令执行层 -->
+                    <div class="layer command-layer">
+                        <div class="layer-header">
+                            <span>⚡ 命令执行层 (Command Layer)</span>
+                            <span>业务逻辑</span>
+                        </div>
+                        <div class="layer-content">
+                            <div class="component-grid">
+                                <div class="component command">
+                                    <h4>BasePouchCommand</h4>
+                                    <p>命令基类，支持Layer和Area双架构，提供统一的渲染管道和执行流程。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="commands-grid">
+                                <div class="command-item">
+                                    <div class="command-name">ProjectCommand</div>
+                                    <div class="command-desc">项目初始化和管理</div>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-name">DiscoverCommand</div>
+                                    <div class="command-desc">发现可用角色和工具</div>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-name">ActionCommand</div>
+                                    <div class="command-desc">角色激活和状态管理</div>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-name">LearnCommand</div>
+                                    <div class="command-desc">领域知识学习</div>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-name">RecallCommand</div>
+                                    <div class="command-desc">记忆检索和回忆</div>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-name">RememberCommand</div>
+                                    <div class="command-desc">记忆存储和管理</div>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-name">ThinkCommand</div>
+                                    <div class="command-desc">思维过程和推理</div>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-name">ToolCommand</div>
+                                    <div class="command-desc">工具执行和管理</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Areas 实现层 -->
+                    <div class="layer areas-layer">
+                        <div class="layer-header">
+                            <span>🧩 Areas 实现层 (Implementation Layer)</span>
+                            <span>具体实现</span>
+                        </div>
+                        <div class="layer-content">
+                            <div class="component-grid">
+                                <div class="component area">
+                                    <h4>BaseArea</h4>
+                                    <p>Area架构的抽象基类，定义了单一职责的内容块渲染接口。</p>
+                                </div>
+                                <div class="component area">
+                                    <h4>CognitionArea</h4>
+                                    <p>认知处理区域，负责思维和推理相关的内容渲染。</p>
+                                </div>
+                                <div class="component area">
+                                    <h4>RoleArea</h4>
+                                    <p>角色相关区域，处理角色激活和状态展示。</p>
+                                </div>
+                                <div class="component area">
+                                    <h4>StateArea</h4>
+                                    <p>状态管理区域，显示当前状态和可用转换。</p>
+                                </div>
+                                <div class="component area">
+                                    <h4>LegacyArea</h4>
+                                    <p>兼容性区域，包装旧的getPurpose/getContent方法。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 组成标签页 -->
+            <div id="composition" class="tab-content">
+                <div class="section">
+                    <h2 class="section-title">
+                        <span>🏗️</span>
+                        双架构渲染系统
+                    </h2>
+                    
+                    <div class="architecture-comparison">
+                        <div class="arch-card">
+                            <h3>🆕 Layer 架构 (新)</h3>
+                            <p>三层认知架构，提供更高层次的组织和协调：</p>
+                            <div class="arch-flow">
+                                <div class="flow-step">ConsciousnessLayer<br><small>意识层</small></div>
+                                <div class="flow-step">CognitionLayer<br><small>认知层</small></div>
+                                <div class="flow-step">RoleLayer<br><small>角色层</small></div>
+                            </div>
+                            <p><strong>特点：</strong>Layer包含多个Area，支持复杂的认知处理流程。</p>
+                        </div>
+                        
+                        <div class="arch-card">
+                            <h3>🔄 Area 架构 (兼容)</h3>
+                            <p>直接的Area渲染，保持向后兼容：</p>
+                            <div class="arch-flow">
+                                <div class="flow-step">BaseArea<br><small>基础区域</small></div>
+                                <div class="flow-step">具体Area实现<br><small>如RoleArea、StateArea</small></div>
+                                <div class="flow-step">LegacyArea<br><small>兼容包装</small></div>
+                            </div>
+                            <p><strong>特点：</strong>单一职责，适合简单场景，兼容旧命令。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">
+                        <span>🔄</span>
+                        PATEOAS 状态转换流程
+                    </h2>
+                    
+                    <div style="background: #f8f9fa; border-radius: 10px; padding: 25px; margin: 20px 0;">
+                        <p>基于 PATEOAS (Prompt as the Engine of Application State) 的状态驱动导航：</p>
+                        
+                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px 0;">
+                            <div style="background: #fdf2f2; border: 2px solid #e74c3c; border-radius: 20px; padding: 10px 20px; font-weight: bold; color: #2c3e50;">initial</div>
+                            <div style="background: white; border: 2px solid #3498db; border-radius: 20px; padding: 10px 20px; font-weight: bold; color: #2c3e50;">initialized</div>
+                            <div style="background: white; border: 2px solid #3498db; border-radius: 20px; padding: 10px 20px; font-weight: bold; color: #2c3e50;">discovering</div>
+                            <div style="background: #f0f9f0; border: 2px solid #27ae60; border-radius: 20px; padding: 10px 20px; font-weight: bold; color: #2c3e50;">activated</div>
+                            <div style="background: white; border: 2px solid #3498db; border-radius: 20px; padding: 10px 20px; font-weight: bold; color: #2c3e50;">learned</div>
+                            <div style="background: white; border: 2px solid #3498db; border-radius: 20px; padding: 10px 20px; font-weight: bold; color: #2c3e50;">recalled</div>
+                        </div>
+                        
+                        <p style="text-align: center; margin-top: 20px;">
+                            <strong>每个状态都提供下一步可执行的动作，形成完整的工作流程导航</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 锦囊标签页 -->
+            <div id="pouches" class="tab-content">
+                <div class="section">
+                    <h2 class="section-title">
+                        <span>📦</span>
+                        项目中的8个锦囊
+                    </h2>
+                    
+                    <div class="pouches-grid">
+                        <!-- ProjectCommand -->
+                        <div class="pouch-card project">
+                            <div class="pouch-header">
+                                <div class="pouch-icon">🏗️</div>
+                                <div class="pouch-title">
+                                    <h3>ProjectCommand</h3>
+                                    <div class="command">project</div>
+                                </div>
+                            </div>
+                            <div class="pouch-description">
+                                项目管理锦囊，负责项目初始化、环境配置和状态管理。支持多IDE环境检测和项目资源目录创建。
+                            </div>
+                            <ul class="pouch-features">
+                                <li>项目路径验证和初始化</li>
+                                <li>IDE类型自动检测</li>
+                                <li>.promptx目录结构创建</li>
+                                <li>项目配置文件生成</li>
+                                <li>资源管理器刷新</li>
+                            </ul>
+                        </div>
+
+                        <!-- DiscoverCommand -->
+                        <div class="pouch-card discover">
+                            <div class="pouch-header">
+                                <div class="pouch-icon">🔍</div>
+                                <div class="pouch-title">
+                                    <h3>DiscoverCommand</h3>
+                                    <div class="command">discover</div>
+                                </div>
+                            </div>
+                            <div class="pouch-description">
+                                资源发现锦囊，展示所有可用的AI角色和工具。按来源分类显示系统级、项目级和用户级资源。
+                            </div>
+                            <ul class="pouch-features">
+                                <li>角色资源发现和分类</li>
+                                <li>工具资源发现和分类</li>
+                                <li>注册表自动刷新</li>
+                                <li>统计信息展示</li>
+                                <li>资源来源标识</li>
+                            </ul>
+                        </div>
+
+                        <!-- ActionCommand -->
+                        <div class="pouch-card action">
+                            <div class="pouch-header">
+                                <div class="pouch-icon">🎭</div>
+                                <div class="pouch-title">
+                                    <h3>ActionCommand</h3>
+                                    <div class="command">action</div>
+                                </div>
+                            </div>
+                            <div class="pouch-description">
+                                角色激活锦囊，专注于角色激活和提示词展示。使用新的Layer架构渲染角色的完整语义信息。
+                            </div>
+                            <ul class="pouch-features">
+                                <li>角色语义解析和渲染</li>
+                                <li>人格特征展示</li>
+                                <li>行为原则加载</li>
+                                <li>专业知识激活</li>
+                                <li>依赖资源分析</li>
+                            </ul>
+                        </div>
+
+                        <!-- LearnCommand -->
+                        <div class="pouch-card learn">
+                            <div class="pouch-header">
+                                <div class="pouch-icon">📚</div>
+                                <div class="pouch-title">
+                                    <h3>LearnCommand</h3>
+                                    <div class="command">learn</div>
+                                </div>
+                            </div>
+                            <div class="pouch-description">
+                                领域学习锦囊，帮助AI学习特定领域的知识和技能。支持知识资源的加载和整合。
+                            </div>
+                            <ul class="pouch-features">
+                                <li>领域知识加载</li>
+                                <li>学习路径规划</li>
+                                <li>知识结构化展示</li>
+                                <li>学习进度跟踪</li>
+                                <li>知识依赖分析</li>
+                            </ul>
+                        </div>
+
+                        <!-- RecallCommand -->
+                        <div class="pouch-card recall">
+                            <div class="pouch-header">
+                                <div class="pouch-icon">🧠</div>
+                                <div class="pouch-title">
+                                    <h3>RecallCommand</h3>
+                                    <div class="command">recall</div>
+                                </div>
+                            </div>
+                            <div class="pouch-description">
+                                记忆检索锦囊，基于认知体系进行智能语义检索。支持DMN模式和关键词检索两种模式。
+                            </div>
+                            <ul class="pouch-features">
+                                <li>语义网络激活</li>
+                                <li>DMN全景扫描</li>
+                                <li>关键词精确检索</li>
+                                <li>记忆网络图展示</li>
+                                <li>认知模式切换</li>
+                            </ul>
+                        </div>
+
+                        <!-- RememberCommand -->
+                        <div class="pouch-card remember">
+                            <div class="pouch-header">
+                                <div class="pouch-icon">💾</div>
+                                <div class="pouch-title">
+                                    <h3>RememberCommand</h3>
+                                    <div class="command">remember</div>
+                                </div>
+                            </div>
+                            <div class="pouch-description">
+                                记忆保存锦囊，基于认知体系保存角色专属记忆。支持批量Engram保存和记忆网络更新。
+                            </div>
+                            <ul class="pouch-features">
+                                <li>Engram批量保存</li>
+                                <li>记忆强度设置</li>
+                                <li>记忆类型分类</li>
+                                <li>语义网络更新</li>
+                                <li>记忆验证机制</li>
+                            </ul>
+                        </div>
+
+                        <!-- ThinkCommand -->
+                        <div class="pouch-card think">
+                            <div class="pouch-header">
+                                <div class="pouch-icon">🤔</div>
+                                <div class="pouch-title">
+                                    <h3>ThinkCommand</h3>
+                                    <div class="command">think</div>
+                                </div>
+                            </div>
+                            <div class="pouch-description">
+                                思考锦囊，基于认知心理学的思维链式推理。支持多种思维模式和递归深化的思考过程。
+                            </div>
+                            <ul class="pouch-features">
+                                <li>思维模式选择</li>
+                                <li>目标导向推理</li>
+                                <li>洞察生成机制</li>
+                                <li>结论形成过程</li>
+                                <li>置信度评估</li>
+                            </ul>
+                        </div>
+
+                        <!-- ToolCommand -->
+                        <div class="pouch-card tool">
+                            <div class="pouch-header">
+                                <div class="pouch-icon">🔧</div>
+                                <div class="pouch-title">
+                                    <h3>ToolCommand</h3>
+                                    <div class="command">toolx</div>
+                                </div>
+                            </div>
+                            <div class="pouch-description">
+                                工具执行锦囊，实现ToolX系统的工具执行功能。支持多种执行模式和沙箱环境管理。
+                            </div>
+                            <ul class="pouch-features">
+                                <li>工具沙箱执行</li>
+                                <li>多模式支持</li>
+                                <li>依赖自动管理</li>
+                                <li>手册自动生成</li>
+                                <li>环境变量配置</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 特性标签页 -->
+            <div id="features" class="tab-content">
+                <div class="section">
+                    <h2 class="section-title">
+                        <span>🌟</span>
+                        锦囊核心特性
+                    </h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #e74c3c;">
+                            <h4 style="color: #e74c3c; margin-bottom: 10px;">🎯 自包含设计</h4>
+                            <p>每个锦囊都是独立的专家知识单元，不依赖外部上下文，可以独立执行。</p>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #3498db;">
+                            <h4 style="color: #3498db; margin-bottom: 10px;">🧭 PATEOAS导航</h4>
+                            <p>每个锦囊都提供下一步操作指引，实现状态驱动的智能导航系统。</p>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #27ae60;">
+                            <h4 style="color: #27ae60; margin-bottom: 10px;">🏗️ 双架构支持</h4>
+                            <p>同时支持Layer和Area两种架构，新旧系统并存，保证向后兼容。</p>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #f39c12;">
+                            <h4 style="color: #f39c12; margin-bottom: 10px;">🤖 AI友好</h4>
+                            <p>专为AI使用优化的接口设计，支持JSON和人类可读两种输出格式。</p>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #9b59b6;">
+                            <h4 style="color: #9b59b6; margin-bottom: 10px;">🔄 状态管理</h4>
+                            <p>自动记录状态历史，持久化到配置文件，支持状态回溯和恢复。</p>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #16a085;">
+                            <h4 style="color: #16a085; margin-bottom: 10px;">🧠 认知集成</h4>
+                            <p>深度集成认知管理系统，支持记忆检索、保存和思维推理。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图例 -->
+                <div class="legend">
+                    <h3>🎨 锦囊类型图例</h3>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #e74c3c;"></div>
+                            <span>项目管理类 (Project)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #3498db;"></div>
+                            <span>资源发现类 (Discover)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f39c12;"></div>
+                            <span>角色激活类 (Action)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #27ae60;"></div>
+                            <span>学习类 (Learn)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #9b59b6;"></div>
+                            <span>记忆检索类 (Recall)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #16a085;"></div>
+                            <span>记忆保存类 (Remember)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #e67e22;"></div>
+                            <span>思维推理类 (Think)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #34495e;"></div>
+                            <span>工具执行类 (Tool)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // 隐藏所有标签页内容
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签的active状态
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签页内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 设置选中的标签为active状态
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

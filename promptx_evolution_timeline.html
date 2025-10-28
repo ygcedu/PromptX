@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptX 项目演变时间线</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 3em;
+            font-weight: 300;
+        }
+        
+        .subtitle {
+            margin: 15px 0 0 0;
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+        
+        .timeline {
+            padding: 40px;
+            position: relative;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #3498db, #9b59b6);
+            transform: translateX(-50%);
+        }
+        
+        .phase {
+            margin-bottom: 60px;
+            position: relative;
+        }
+        
+        .phase-marker {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+        
+        .phase-marker.e0 { border-color: #e74c3c; }
+        .phase-marker.alpha { border-color: #f39c12; }
+        .phase-marker.beta { border-color: #3498db; }
+        .phase-marker.stable { border-color: #27ae60; }
+        .phase-marker.mature { border-color: #9b59b6; }
+        
+        .phase-content {
+            width: 45%;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .phase:nth-child(odd) .phase-content {
+            margin-left: 0;
+        }
+        
+        .phase:nth-child(even) .phase-content {
+            margin-left: 55%;
+        }
+        
+        .phase-content::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+        }
+        
+        .phase:nth-child(odd) .phase-content::before {
+            right: -20px;
+            border-left-color: #f8f9fa;
+        }
+        
+        .phase:nth-child(even) .phase-content::before {
+            left: -20px;
+            border-right-color: #f8f9fa;
+        }
+        
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .phase-icon {
+            font-size: 2em;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .phase-icon.e0 { background: #e74c3c; }
+        .phase-icon.alpha { background: #f39c12; }
+        .phase-icon.beta { background: #3498db; }
+        .phase-icon.stable { background: #27ae60; }
+        .phase-icon.mature { background: #9b59b6; }
+        
+        .phase-title {
+            flex: 1;
+        }
+        
+        .phase-title h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.5em;
+        }
+        
+        .phase-period {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .phase-version {
+            background: #ecf0f1;
+            color: #2c3e50;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .phase-description {
+            color: #34495e;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .achievements {
+            margin-bottom: 20px;
+        }
+        
+        .achievements h4 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+        
+        .achievement-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .achievement-list li {
+            padding: 5px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .achievement-list li::before {
+            content: '✓';
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .tech-stack {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .tech-stack h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 1em;
+        }
+        
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tech-tag {
+            background: #ecf0f1;
+            color: #2c3e50;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+        
+        .milestone-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .summary {
+            background: #f8f9fa;
+            padding: 30px;
+            margin-top: 40px;
+            border-radius: 10px;
+        }
+        
+        .summary h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .evolution-insights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .insight-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        
+        .insight-card.concept { border-left-color: #e74c3c; }
+        .insight-card.architecture { border-left-color: #3498db; }
+        .insight-card.ecosystem { border-left-color: #27ae60; }
+        .insight-card.maturity { border-left-color: #9b59b6; }
+        
+        .insight-card h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .insight-card p {
+            margin: 0;
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 30px;
+            }
+            
+            .phase-marker {
+                left: 30px;
+            }
+            
+            .phase-content {
+                width: calc(100% - 80px);
+                margin-left: 60px !important;
+            }
+            
+            .phase-content::before {
+                left: -20px !important;
+                border-right-color: #f8f9fa !important;
+                border-left-color: transparent !important;
+            }
+            
+            .evolution-insights {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 PromptX 项目演变时间线</h1>
+            <p class="subtitle">从纯协议理论到成熟AI框架的完整发展历程</p>
+        </div>
+        
+        <div class="timeline">
+            <!-- 第一阶段：理论奠基期 -->
+            <div class="phase">
+                <div class="phase-marker e0"></div>
+                <div class="phase-content">
+                    <div class="phase-header">
+                        <div class="phase-icon e0">🧠</div>
+                        <div class="phase-title">
+                            <h3>E0 阶段：理论奠基期</h3>
+                            <div class="phase-period">2025年5月 - 2025年6月</div>
+                        </div>
+                        <div class="phase-version">v0.0.1-e0</div>
+                    </div>
+                    
+                    <div class="phase-description">
+                        <strong>纯DPML协议标准化系统完成</strong> - 这是PromptX发展史上的重要里程碑，100%纯提示词协议系统，零代码实现，革命性的"释义即实现"理念完全验证。
+                    </div>
+                    
+                    <div class="achievements">
+                        <h4>🎯 核心成就</h4>
+                        <ul class="achievement-list">
+                            <li>DPML(Deepractice Prompt Markup Language)协议体系完整建立</li>
+                            <li>三层架构定型：protocol → core → domain</li>
+                            <li>革命性的"释义即实现"理念验证</li>
+                            <li>AI原生编程语言的理论突破</li>
+                            <li>为后续JavaScript引擎实现奠定基础</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-stack">
+                        <h4>🛠️ 技术特征</h4>
+                        <div class="tech-tags">
+                            <span class="tech-tag">纯Markdown</span>
+                            <span class="tech-tag">DPML协议</span>
+                            <span class="tech-tag">语义驱动</span>
+                            <span class="tech-tag">零代码</span>
+                        </div>
+                    </div>
+                    
+                    <div class="milestone-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">24</div>
+                            <div class="stat-label">协议文件</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">29</div>
+                            <div class="stat-label">总文件数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">纯语义</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第二阶段：原型开发期 -->
+            <div class="phase">
+                <div class="phase-marker alpha"></div>
+                <div class="phase-content">
+                    <div class="phase-header">
+                        <div class="phase-icon alpha">⚡</div>
+                        <div class="phase-title">
+                            <h3>Alpha 阶段：原型开发期</h3>
+                            <div class="phase-period">2025年6月 - 2025年7月</div>
+                        </div>
+                        <div class="phase-version">v0.1.0-alpha ~ v0.2.0-alpha</div>
+                    </div>
+                    
+                    <div class="phase-description">
+                        <strong>JavaScript引擎实现与CLI框架构建</strong> - 从纯协议理论转向实际可执行的系统，完成五大锦囊命令、AI记忆系统、角色系统的初步实现。
+                    </div>
+                    
+                    <div class="achievements">
+                        <h4>🎯 核心成就</h4>
+                        <ul class="achievement-list">
+                            <li>五大锦囊命令系统完整实现</li>
+                            <li>AI记忆系统和角色系统建立</li>
+                            <li>PATEOAS状态机完成</li>
+                            <li>CLI框架完整实现</li>
+                            <li>132/137核心测试通过(96.3%通过率)</li>
+                            <li>从dpml-prompt到PromptX品牌确立</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-stack">
+                        <h4>🛠️ 技术栈</h4>
+                        <div class="tech-tags">
+                            <span class="tech-tag">Node.js</span>
+                            <span class="tech-tag">JavaScript</span>
+                            <span class="tech-tag">CLI框架</span>
+                            <span class="tech-tag">Jest测试</span>
+                            <span class="tech-tag">PATEOAS</span>
+                        </div>
+                    </div>
+                    
+                    <div class="milestone-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">5</div>
+                            <div class="stat-label">锦囊命令</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">96.3%</div>
+                            <div class="stat-label">测试通过率</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">137</div>
+                            <div class="stat-label">测试用例</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第三阶段：架构重构期 -->
+            <div class="phase">
+                <div class="phase-marker beta"></div>
+                <div class="phase-content">
+                    <div class="phase-header">
+                        <div class="phase-icon beta">🏗️</div>
+                        <div class="phase-title">
+                            <h3>Beta 阶段：架构重构期</h3>
+                            <div class="phase-period">2025年7月 - 2025年9月</div>
+                        </div>
+                        <div class="phase-version">v1.7.0-beta ~ v1.18.0-beta</div>
+                    </div>
+                    
+                    <div class="phase-description">
+                        <strong>Monorepo架构与MCP协议集成</strong> - 项目架构全面重构，引入MCP协议支持，建立现代化的开发和发布体系。
+                    </div>
+                    
+                    <div class="achievements">
+                        <h4>🎯 核心成就</h4>
+                        <ul class="achievement-list">
+                            <li>Monorepo架构重构完成</li>
+                            <li>MCP(Model Context Protocol)协议集成</li>
+                            <li>认知系统架构重构</li>
+                            <li>ToolX工具系统建立</li>
+                            <li>桌面应用开发启动</li>
+                            <li>现代化CI/CD流水线建立</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-stack">
+                        <h4>🛠️ 技术栈</h4>
+                        <div class="tech-tags">
+                            <span class="tech-tag">Monorepo</span>
+                            <span class="tech-tag">MCP协议</span>
+                            <span class="tech-tag">TypeScript</span>
+                            <span class="tech-tag">Electron</span>
+                            <span class="tech-tag">Turbo</span>
+                            <span class="tech-tag">Changesets</span>
+                        </div>
+                    </div>
+                    
+                    <div class="milestone-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">核心包</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">2</div>
+                            <div class="stat-label">应用</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">MCP</div>
+                            <div class="stat-label">协议支持</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第四阶段：功能完善期 -->
+            <div class="phase">
+                <div class="phase-marker stable"></div>
+                <div class="phase-content">
+                    <div class="phase-header">
+                        <div class="phase-icon stable">🚀</div>
+                        <div class="phase-title">
+                            <h3>Stable 阶段：功能完善期</h3>
+                            <div class="phase-period">2025年9月 - 2025年10月</div>
+                        </div>
+                        <div class="phase-version">v1.19.0 ~ v1.23.0</div>
+                    </div>
+                    
+                    <div class="phase-description">
+                        <strong>认知系统深化与工具生态建设</strong> - 认知系统全面升级，工具生态快速扩展，用户体验显著提升。
+                    </div>
+                    
+                    <div class="achievements">
+                        <h4>🎯 核心成就</h4>
+                        <ul class="achievement-list">
+                            <li>Engram类型系统和两阶段召回策略</li>
+                            <li>DMN模式和语义场激活机制</li>
+                            <li>项目管理架构重构(init→project)</li>
+                            <li>角色系统架构模块化重构</li>
+                            <li>从LMDB迁移到SQLite数据库</li>
+                            <li>Windows代码签名和自动更新</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-stack">
+                        <h4>🛠️ 技术栈</h4>
+                        <div class="tech-tags">
+                            <span class="tech-tag">SQLite</span>
+                            <span class="tech-tag">Better-SQLite3</span>
+                            <span class="tech-tag">SignPath</span>
+                            <span class="tech-tag">Cloudflare R2</span>
+                            <span class="tech-tag">认知心理学</span>
+                        </div>
+                    </div>
+                    
+                    <div class="milestone-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">8</div>
+                            <div class="stat-label">锦囊命令</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">DMN</div>
+                            <div class="stat-label">认知模式</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">SQLite</div>
+                            <div class="stat-label">数据库</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第五阶段：生态成熟期 -->
+            <div class="phase">
+                <div class="phase-marker mature"></div>
+                <div class="phase-content">
+                    <div class="phase-header">
+                        <div class="phase-icon mature">🌟</div>
+                        <div class="phase-title">
+                            <h3>Mature 阶段：生态成熟期</h3>
+                            <div class="phase-period">2025年10月 - 至今</div>
+                        </div>
+                        <div class="phase-version">v1.24.0 ~ v1.25.2</div>
+                    </div>
+                    
+                    <div class="phase-description">
+                        <strong>工具生态爆发与企业级特性</strong> - 内置工具系统全面建立，企业级特性完善，形成完整的AI工作流程生态系统。
+                    </div>
+                    
+                    <div class="achievements">
+                        <h4>🎯 核心成就</h4>
+                        <ul class="achievement-list">
+                            <li>Office套件工具集成(PDF/Excel/Word)</li>
+                            <li>ToolX YAML支持降低AI认知负担</li>
+                            <li>认知循环提示词管理统一</li>
+                            <li>包名规范化(@promptx命名空间)</li>
+                            <li>DPML标签属性系统完善</li>
+                            <li>企业级稳定性和兼容性保障</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-stack">
+                        <h4>🛠️ 技术栈</h4>
+                        <div class="tech-tags">
+                            <span class="tech-tag">PDF处理</span>
+                            <span class="tech-tag">Excel操作</span>
+                            <span class="tech-tag">Word文档</span>
+                            <span class="tech-tag">YAML配置</span>
+                            <span class="tech-tag">企业级</span>
+                        </div>
+                    </div>
+                    
+                    <div class="milestone-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">6+</div>
+                            <div class="stat-label">内置工具</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">YAML</div>
+                            <div class="stat-label">配置支持</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">企业级</div>
+                            <div class="stat-label">稳定性</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 演变总结 -->
+        <div class="summary">
+            <h2>🎯 演变洞察与发展规律</h2>
+            
+            <div class="evolution-insights">
+                <div class="insight-card concept">
+                    <h4>🧠 理念驱动发展</h4>
+                    <p>从"释义即实现"的理论突破开始，PromptX始终坚持AI原生的设计理念，每个阶段都在验证和深化这一核心思想。</p>
+                </div>
+                
+                <div class="insight-card architecture">
+                    <h4>🏗️ 架构持续演进</h4>
+                    <p>从纯协议到JavaScript实现，从单体到Monorepo，从CLI到MCP协议，架构演进始终服务于更好的AI体验。</p>
+                </div>
+                
+                <div class="insight-card ecosystem">
+                    <h4>🌱 生态逐步完善</h4>
+                    <p>从5个基础锦囊到8个核心命令，从简单工具到Office套件集成，生态建设遵循从核心到边缘的扩展路径。</p>
+                </div>
+                
+                <div class="insight-card maturity">
+                    <h4>🚀 成熟度递增</h4>
+                    <p>每个阶段都在前一阶段基础上提升成熟度：理论→原型→架构→功能→生态，形成螺旋式上升发展。</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px; text-align: center;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📈 发展数据总览</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px;">
+                    <div>
+                        <div style="font-size: 2em; font-weight: bold; color: #e74c3c;">18个月</div>
+                        <div style="color: #7f8c8d;">开发周期</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2em; font-weight: bold; color: #3498db;">5个阶段</div>
+                        <div style="color: #7f8c8d;">演进阶段</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2em; font-weight: bold; color: #27ae60;">50+版本</div>
+                        <div style="color: #7f8c8d;">发布版本</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2em; font-weight: bold; color: #9b59b6;">8个锦囊</div>
+                        <div style="color: #7f8c8d;">核心命令</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
