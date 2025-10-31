@@ -24,8 +24,9 @@ export class PromptXAgent {
     console.log('🎯 PromptX Mini - AI专业化演示系统')
     console.log('='.repeat(60))
     console.log('💡 可用命令:')
+    console.log('  • "创建角色：数据分析师，专门分析数据" - 创建新角色')
     console.log('  • "激活产品经理" - 切换到产品经理角色')
-    console.log('  • "激活架构师" - 切换到架构师角色')
+    console.log('  • "激活架构师" - 切换到架构师角色') 
     console.log('  • "激活内容专家" - 切换到内容专家角色')
     console.log('  • "计算 2+3*4" - 使用计算器工具')
     console.log('  • "分析文本: 你好世界" - 使用文本分析工具')
@@ -54,6 +55,11 @@ export class PromptXAgent {
   // 解析并执行用户意图
   parseAndExecute(input) {
     const lowerInput = input.toLowerCase()
+
+    // 角色创建意图
+    if (lowerInput.includes('创建角色')) {
+      return this.handleRoleCreation(input)
+    }
 
     // 角色激活意图
     if (lowerInput.includes('激活') || lowerInput.includes('切换')) {
@@ -88,21 +94,49 @@ export class PromptXAgent {
     return this.handleDefault(input)
   }
 
+  // 处理角色创建
+  handleRoleCreation(input) {
+    try {
+      const result = this.roleSystem.createRole(input)
+      return `🎆 成功创建新角色！\n` +
+             `🎭 角色名称: ${result.roleData.name}\n` +
+             `📝 角色描述: ${result.roleData.description}\n` +
+             `📚 专业领域: ${result.roleData.knowledge.slice(0, 3).join(', ')}\n` +
+             `💡 现在您可以说 "激活${result.roleData.name}" 来使用这个角色！`
+    } catch (error) {
+      return `❌ 角色创建失败: ${error.message}\n` +
+             `💡 正确格式: "创建角色：数据分析师，专门分析数据和制作报表"`
+    }
+  }
+
   // 处理角色激活
   handleRoleActivation(input) {
     try {
-      let roleId = null
-      if (input.includes('产品经理')) roleId = 'product-manager'
-      else if (input.includes('架构师')) roleId = 'architect'
-      else if (input.includes('内容专家') || input.includes('写作')) roleId = 'writer'
+      // 获取所有可用角色
+      const roles = this.roleSystem.listRoles()
+      
+      // 尝试匹配角色名称
+      let targetRole = null
+      for (const role of roles) {
+        if (input.includes(role.name)) {
+          targetRole = role
+          break
+        }
+      }
+      
+      // 如果没有直接匹配，尝试匹配内置角色的别名
+      if (!targetRole) {
+        if (input.includes('产品经理')) targetRole = roles.find(r => r.id === 'product-manager')
+        else if (input.includes('架构师')) targetRole = roles.find(r => r.id === 'architect')
+        else if (input.includes('内容专家') || input.includes('写作')) targetRole = roles.find(r => r.id === 'writer')
+      }
 
-      if (roleId) {
-        const result = this.roleSystem.activateRole(roleId)
+      if (targetRole) {
+        const result = this.roleSystem.activateRole(targetRole.id)
         return `✨ 已激活${result.role.name}角色！\n` +
                `🎯 专业领域: ${result.role.knowledge.slice(0, 3).join(', ')}\n` +
                `💡 我现在可以为您提供专业的${result.role.name}建议。请告诉我您需要什么帮助？`
       } else {
-        const roles = this.roleSystem.listRoles()
         return `❓ 未识别到具体角色。可用角色:\n` +
                roles.map(r => `  • ${r.name}: ${r.description}`).join('\n')
       }
@@ -167,15 +201,32 @@ export class PromptXAgent {
 
   // 处理帮助请求
   handleHelp() {
+    // 动态获取当前可用角色
+    const roles = this.roleSystem.listRoles()
+    const tools = this.toolSystem.listTools()
+    const memoryStatus = this.memory.getNetworkStatus()
+    
+    let roleHelp = `🎭 角色系统:\n`
+    roleHelp += `  • 创建角色：[角色名]，[描述] - 创建自定义角色\n`
+    
+    // 动态显示所有可用角色
+    roles.forEach(role => {
+      const status = role.isActive ? ' (当前激活)' : ''
+      const type = role.isCustom ? ' [自定义]' : ' [内置]'
+      roleHelp += `  • 激活${role.name} - ${role.description}${type}${status}\n`
+    })
+    
+    let toolHelp = `\n🔧 工具系统:\n`
+    tools.forEach(tool => {
+      toolHelp += `  • ${tool.name} - ${tool.description} (使用${tool.usageCount}次)\n`
+    })
+    
     return `📚 PromptX Mini 使用指南:\n\n` +
-           `🎭 角色系统:\n` +
-           `  • 激活产品经理 - 获得产品管理专业能力\n` +
-           `  • 激活架构师 - 获得技术架构专业能力\n` +
-           `  • 激活内容专家 - 获得内容创作专业能力\n\n` +
-           `🔧 工具系统:\n` +
-           `  • 计算 [表达式] - 数学计算\n` +
-           `  • 分析文本: [文本] - 文本统计分析\n\n` +
-           `🧠 记忆系统:\n` +
+           roleHelp +
+           toolHelp +
+           `\n🧠 记忆系统:\n` +
+           `  • 概念节点: ${memoryStatus.totalNodes}个\n` +
+           `  • 连接关系: ${memoryStatus.totalConnections}个\n` +
            `  • 自动记录所有交互和知识\n` +
            `  • 智能关联相关概念\n` +
            `  • 支持上下文检索\n\n` +

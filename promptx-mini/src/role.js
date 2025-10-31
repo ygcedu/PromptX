@@ -120,13 +120,63 @@ export class RoleSystem {
     }
   }
 
+  // 动态创建新角色（类似PromptX的Nuwa功能）
+  createRole(input) {
+    // 解析创建角色的输入
+    const match = input.match(/创建角色[:：]\s*(.+?)，(.+)/)
+    if (!match) {
+      throw new Error('角色创建格式错误。正确格式："创建角色：角色名，角色描述"')
+    }
+
+    const [, roleName, roleDescription] = match
+    const roleId = roleName.toLowerCase().replace(/\s+/g, '-')
+
+    // 检查角色是否已存在
+    if (this.roles.has(roleId)) {
+      throw new Error(`角色 "${roleName}" 已存在`)
+    }
+
+    // 基于描述生成基础知识领域
+    const knowledge = this.generateKnowledgeFromDescription(roleDescription)
+
+    // 创建角色定义
+    const roleData = {
+      name: roleName,
+      description: roleDescription,
+      knowledge,
+      behavior: {
+        style: '专业深入，实用导向',
+        approach: `作为${roleName}，从专业角度分析和解决问题`,
+        tools: ['专业分析', '实践建议', '经验分享']
+      },
+      isCustom: true,
+      createdAt: Date.now()
+    }
+
+    // 定义新角色
+    this.defineRole(roleId, roleData)
+
+    console.log(`🎭 成功创建角色: ${roleName} (${roleId})`)
+    return { roleId, roleData }
+  }
+
+  // 从描述中生成知识领域
+  generateKnowledgeFromDescription(description) {
+    const keywords = description.split(/[，。、\s]+/)
+      .filter(word => word.length > 1)
+      .slice(0, 5)
+    
+    return keywords.map(keyword => `${keyword}相关知识和技能`)
+  }
+
   // 列出所有可用角色
   listRoles() {
     return Array.from(this.roles.entries()).map(([id, role]) => ({
       id,
       name: role.name,
       description: role.description,
-      isActive: this.currentRole?.id === id
+      isActive: this.currentRole?.id === id,
+      isCustom: role.isCustom || false
     }))
   }
 }

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "demo": "node index.js"
+    "demo": "node index.js --demo"
   },
   "keywords": ["ai", "prompt", "role", "memory", "tools"],
   "author": "PromptX Mini Demo",
