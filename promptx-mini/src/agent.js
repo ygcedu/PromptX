@@ -25,8 +25,9 @@ export class PromptXAgent {
     console.log('='.repeat(60))
     console.log('💡 可用命令:')
     console.log('  • "创建角色：数据分析师，专门分析数据" - 创建新角色')
+    console.log('  • "创建工具：随机选择器，随机选择一个选项" - 创建新工具')
     console.log('  • "激活产品经理" - 切换到产品经理角色')
-    console.log('  • "激活架构师" - 切换到架构师角色') 
+    console.log('  • "激活架构师" - 切换到架构师角色')
     console.log('  • "激活内容专家" - 切换到内容专家角色')
     console.log('  • "计算 2+3*4" - 使用计算器工具')
     console.log('  • "分析文本: 你好世界" - 使用文本分析工具')
@@ -61,6 +62,11 @@ export class PromptXAgent {
       return this.handleRoleCreation(input)
     }
 
+    // 工具创建意图
+    if (lowerInput.includes('创建工具')) {
+      return this.handleToolCreation(input)
+    }
+
     // 角色激活意图
     if (lowerInput.includes('激活') || lowerInput.includes('切换')) {
       return this.handleRoleActivation(input)
@@ -73,6 +79,11 @@ export class PromptXAgent {
 
     if (lowerInput.includes('分析文本') || lowerInput.includes('文本分析')) {
       return this.handleTextAnalysis(input)
+    }
+
+    // 通用工具使用意图
+    if (lowerInput.includes('使用')) {
+      return this.handleGenericToolUsage(input)
     }
 
     // 系统状态查询
@@ -109,12 +120,27 @@ export class PromptXAgent {
     }
   }
 
+  // 处理工具创建
+  handleToolCreation(input) {
+    try {
+      const result = this.toolSystem.createTool(input)
+      return `🎆 成功创建新工具！\n` +
+             `🔧 工具名称: ${result.toolData.name}\n` +
+             `📝 工具描述: ${result.toolData.description}\n` +
+             `📊 参数列表: ${result.toolData.parameters.join(', ')}\n` +
+             `💡 现在您可以使用这个工具了！`
+    } catch (error) {
+      return `❌ 工具创建失败: ${error.message}\n` +
+             `💡 正确格式: "创建工具：随机选择器，从多个选项中随机选择一个"`
+    }
+  }
+
   // 处理角色激活
   handleRoleActivation(input) {
     try {
       // 获取所有可用角色
       const roles = this.roleSystem.listRoles()
-      
+
       // 尝试匹配角色名称
       let targetRole = null
       for (const role of roles) {
@@ -123,7 +149,7 @@ export class PromptXAgent {
           break
         }
       }
-      
+
       // 如果没有直接匹配，尝试匹配内置角色的别名
       if (!targetRole) {
         if (input.includes('产品经理')) targetRole = roles.find(r => r.id === 'product-manager')
@@ -183,6 +209,37 @@ export class PromptXAgent {
     return '❓ 请提供要分析的文本，例如: "分析文本: 你好世界"'
   }
 
+  // 处理通用工具使用
+  handleGenericToolUsage(input) {
+    const match = input.match(/使用(.+?)[:：]\s*(.+)/)
+    if (match) {
+      const [, toolName, params] = match
+      const trimmedToolName = toolName.trim()
+
+      // 查找匹配的工具
+      const tools = this.toolSystem.listTools()
+      const targetTool = tools.find(tool =>
+        tool.name.includes(trimmedToolName) || trimmedToolName.includes(tool.name)
+      )
+
+      if (targetTool) {
+        // 解析参数
+        const paramList = params.split(/[,，、\s]+/).filter(item => item.trim())
+        const result = this.toolSystem.executeTool(targetTool.id, ...paramList)
+
+        if (result.success) {
+          return `🔧 ${targetTool.name}执行结果: ${result.result}`
+        } else {
+          return `❌ 工具执行失败: ${result.error}`
+        }
+      } else {
+        const availableTools = tools.map(t => t.name).join(', ')
+        return `❓ 未找到工具 "${trimmedToolName}"。可用工具: ${availableTools}`
+      }
+    }
+    return '❓ 请使用正确格式: "使用[工具名]: [参数]"'
+  }
+
   // 处理状态查询
   handleStatusQuery() {
     const memoryStatus = this.memory.getNetworkStatus()
@@ -205,22 +262,24 @@ export class PromptXAgent {
     const roles = this.roleSystem.listRoles()
     const tools = this.toolSystem.listTools()
     const memoryStatus = this.memory.getNetworkStatus()
-    
+
     let roleHelp = `🎭 角色系统:\n`
     roleHelp += `  • 创建角色：[角色名]，[描述] - 创建自定义角色\n`
-    
+
     // 动态显示所有可用角色
     roles.forEach(role => {
       const status = role.isActive ? ' (当前激活)' : ''
       const type = role.isCustom ? ' [自定义]' : ' [内置]'
       roleHelp += `  • 激活${role.name} - ${role.description}${type}${status}\n`
     })
-    
+
     let toolHelp = `\n🔧 工具系统:\n`
+    toolHelp += `  • 创建工具：[工具名]，[描述] - 创建自定义工具\n`
     tools.forEach(tool => {
-      toolHelp += `  • ${tool.name} - ${tool.description} (使用${tool.usageCount}次)\n`
+      const type = tool.isCustom ? ' [自定义]' : ' [内置]'
+      toolHelp += `  • ${tool.name} - ${tool.description}${type} (使用${tool.usageCount}次)\n`
     })
-    
+
     return `📚 PromptX Mini 使用指南:\n\n` +
            roleHelp +
            toolHelp +

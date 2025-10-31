@@ -146,14 +146,125 @@ export class ToolSystem {
     return matches / queryWords.length
   }
 
-  // 列出所有工具
+  // 动态创建新工具（类似PromptX的Luban功能）
+  createTool(input) {
+    // 解析创建工具的输入
+    const match = input.match(/创建工具[:：]\s*(.+?)，(.+)/)
+    if (!match) {
+      throw new Error('工具创建格式错误。正确格式："创建工具：工具名，工具描述"')
+    }
+
+    const [, toolName, toolDescription] = match
+    const toolId = toolName.toLowerCase().replace(/\s+/g, '-')
+
+    // 检查工具是否已存在
+    if (this.tools.has(toolId)) {
+      throw new Error(`工具 "${toolName}" 已存在`)
+    }
+
+    // 基于描述生成工具逻辑
+    const toolLogic = this.generateToolLogic(toolDescription)
+
+    // 创建工具定义
+    const toolData = {
+      name: toolName,
+      description: toolDescription,
+      parameters: toolLogic.parameters,
+      execute: toolLogic.execute,
+      isCustom: true,
+      createdAt: Date.now(),
+      usageCount: 0
+    }
+
+    // 注册新工具
+    this.registerTool(toolId, toolData)
+
+    console.log(`🔧 成功创建工具: ${toolName} (${toolId})`)
+    return { toolId, toolData }
+  }
+
+  // 基于描述生成工具逻辑
+  generateToolLogic(description) {
+    const lowerDesc = description.toLowerCase()
+
+    // 根据描述关键词生成不同类型的工具
+    if (lowerDesc.includes('随机') || lowerDesc.includes('抽奖') || lowerDesc.includes('选择')) {
+      return {
+        parameters: ['选项列表'],
+        execute: (...options) => {
+          if (options.length === 0) return { success: false, error: '请提供选项列表' }
+          const randomIndex = Math.floor(Math.random() * options.length)
+          return { success: true, result: options[randomIndex], selectedFrom: options }
+        }
+      }
+    } else if (lowerDesc.includes('时间') || lowerDesc.includes('日期')) {
+      return {
+        parameters: ['格式'],
+        execute: (format = 'default') => {
+          const now = new Date()
+          let result
+          switch (format) {
+            case 'date': result = now.toDateString(); break
+            case 'time': result = now.toTimeString(); break
+            case 'iso': result = now.toISOString(); break
+            default: result = now.toLocaleString('zh-CN')
+          }
+          return { success: true, result, timestamp: now.getTime() }
+        }
+      }
+    } else if (lowerDesc.includes('密码') || lowerDesc.includes('生成')) {
+      return {
+        parameters: ['长度'],
+        execute: (length = 8) => {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
+          let result = ''
+          for (let i = 0; i < parseInt(length); i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length))
+          }
+          return { success: true, result, length: result.length }
+        }
+      }
+    } else if (lowerDesc.includes('编码') || lowerDesc.includes('base64')) {
+      return {
+        parameters: ['文本', '操作'],
+        execute: (text, operation = 'encode') => {
+          try {
+            if (operation === 'encode') {
+              const result = Buffer.from(text, 'utf8').toString('base64')
+              return { success: true, result, operation: 'encode' }
+            } else {
+              const result = Buffer.from(text, 'base64').toString('utf8')
+              return { success: true, result, operation: 'decode' }
+            }
+          } catch (error) {
+            return { success: false, error: error.message }
+          }
+        }
+      }
+    } else {
+      // 通用工具模板
+      return {
+        parameters: ['输入'],
+        execute: (input) => {
+          return {
+            success: true,
+            result: `处理结果: ${input}`,
+            processed: true,
+            tool: description
+          }
+        }
+      }
+    }
+  }
+
+  // 列出所有可用工具
   listTools() {
     return Array.from(this.tools.entries()).map(([id, tool]) => ({
       id,
       name: tool.name,
       description: tool.description,
-      parameters: tool.parameters,
-      usageCount: tool.usageCount
+      usageCount: tool.usageCount || 0,
+      isCustom: tool.isCustom || false
     }))
   }
 }
