@@ -1,0 +1,14 @@
+{
+  "name": "promptx-mini",
+  "version": "1.0.0",
+  "description": "PromptX核心理念的极简实现 - 展示AI角色化、记忆系统和工具集成",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "demo": "node index.js"
+  },
+  "keywords": ["ai", "prompt", "role", "memory", "tools"],
+  "author": "PromptX Mini Demo",
+  "license": "MIT"
+}
