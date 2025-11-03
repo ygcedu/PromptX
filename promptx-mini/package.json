@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "demo": "node index.js --demo",
-    "mcp": "node --watch src/mcp.js"
+    "mcp": "node src/mcp/index.js",
+    "mcp:dev": "node --watch src/mcp/index.js"
   },
   "keywords": ["ai", "prompt", "role", "memory", "tools", "mcp"],
   "author": "PromptX Mini Demo",

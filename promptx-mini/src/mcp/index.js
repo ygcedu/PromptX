@@ -11,8 +11,8 @@ import {
   ListToolsRequestSchema,
   CallToolRequestSchema
 } from '@modelcontextprotocol/sdk/types.js'
-import { PromptXAgent } from './agent.js'
-import { getToolList, executeTool, allTools } from './mcp/tools/index.js'
+import { PromptXAgent } from '../agent.js'
+import { getToolList, executeTool, allTools } from './tools/index.js'
 
 // 创建 Express 应用
 const app = express()

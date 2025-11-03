@@ -61,7 +61,7 @@ npm run mcp:dev
 **MCP 服务器地址**: `http://127.0.0.1:8080/mcp`  
 **健康检查**: `http://127.0.0.1:8080/health`
 
-详细的 MCP 使用说明请查看 [MCP_README.md](./MCP_README.md)
+详细的 MCP 使用说明请查看 [MCP README](./src/mcp/README.md)
 
 ### 基本使用
 
