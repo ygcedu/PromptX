@@ -13,6 +13,7 @@
   "author": "PromptX Mini Demo",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.11.4"
+    "@modelcontextprotocol/sdk": "^1.11.4",
+    "express": "^4.21.2"
   }
 }
