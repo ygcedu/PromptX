@@ -6,9 +6,13 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "demo": "node index.js --demo"
+    "demo": "node index.js --demo",
+    "mcp": "node --watch src/mcp.js"
   },
-  "keywords": ["ai", "prompt", "role", "memory", "tools"],
+  "keywords": ["ai", "prompt", "role", "memory", "tools", "mcp"],
   "author": "PromptX Mini Demo",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.4"
+  }
 }

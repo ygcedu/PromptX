@@ -36,12 +36,32 @@
 # 克隆或下载代码
 cd promptx-mini
 
+# 安装依赖（如果需要MCP功能）
+npm install
+
 # 运行演示
 node index.js
 
 # 或者直接看自动演示
 node index.js --demo
 ```
+
+### 🌐 MCP 服务器模式
+
+现在支持 MCP (Model Context Protocol) 服务器，让大模型可以直接调用 PromptX Mini 的功能：
+
+```bash
+# 启动 MCP 服务器
+npm run mcp
+
+# 开发模式（自动重启）
+npm run mcp:dev
+```
+
+**MCP 服务器地址**: `http://127.0.0.1:8080/mcp`  
+**健康检查**: `http://127.0.0.1:8080/health`
+
+详细的 MCP 使用说明请查看 [MCP_README.md](./MCP_README.md)
 
 ### 基本使用
 
