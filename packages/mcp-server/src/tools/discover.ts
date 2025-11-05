@@ -5,7 +5,7 @@ const outputAdapter = new MCPOutputAdapter();
 
 /**
  * Discover 工具 - 展示所有可用的AI专业角色和工具
- * 
+ *
  * 为AI提供完整的专业服务选项清单，包括可激活的角色和可调用的工具。
  */
 export const discoverTool: ToolWithHandler = {
@@ -67,21 +67,21 @@ export const discoverTool: ToolWithHandler = {
       }
     }
   },
-  handler: async () => {
+  handler: async (args: { focus: string }) => {
     // 动态导入 @promptx/core
     const core = await import('@promptx/core');
     const coreExports = core.default || core;
-    
+
     // 获取 cli 对象
     const cli = (coreExports as any).cli || (coreExports as any).pouch?.cli;
-    
+
     if (!cli || !cli.execute) {
       throw new Error('CLI not available in @promptx/core');
     }
-    
+
     // 执行 discover 命令
-    const result = await cli.execute('discover', []);
-    
+    const result = await cli.execute('discover', [args.focus]);
+
     // 使用 OutputAdapter 格式化输出
     return outputAdapter.convertToMCPFormat(result);
   }

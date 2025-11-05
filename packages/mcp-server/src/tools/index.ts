@@ -3,7 +3,7 @@
  */
 
 // PromptX 核心工具
-export { discoverTool } from './welcome.js';
+export { discoverTool } from './discover.js';
 export { actionTool } from './action.js';
 export { projectTool } from './project.js';
 // export { learnTool } from './learn.js';  // 暂时禁用 learn 工具
@@ -11,7 +11,7 @@ export { recallTool } from './recall.js';
 export { rememberTool } from './remember.js';
 export { toolxTool } from './toolx.js';
 
-import { discoverTool } from './welcome.js';
+import { discoverTool } from './discover.js';
 import { actionTool } from './action.js';
 import { projectTool } from './project.js';
 // import { learnTool } from './learn.js';  // 暂时禁用 learn 工具
