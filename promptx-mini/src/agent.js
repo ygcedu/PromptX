@@ -1,38 +1,48 @@
 /**
  * 极简AI代理 - 模拟PromptX的核心交互逻辑
  * 核心概念：自然语言理解 + 意图识别 + 智能响应
+ * 新增：DPML语义解析 + Pouch状态导航
  */
 
 import { Memory } from './memory.js'
 import { RoleSystem } from './role.js'
 import { ToolSystem } from './tool.js'
+import { MiniDPML } from './dpml.js'
+import { MiniPouch } from './pouch.js'
 
 export class PromptXAgent {
   constructor() {
     this.memory = new Memory()
     this.roleSystem = new RoleSystem(this.memory)
     this.toolSystem = new ToolSystem(this.memory)
+    this.dpml = new MiniDPML(this.memory)
+    this.pouch = new MiniPouch(this.memory)
     this.conversationHistory = []
 
     console.log('🚀 PromptX Mini Agent 已启动!')
+    console.log('✨ 新增功能: DPML语义解析 + Pouch状态导航')
     this.showWelcome()
   }
 
   // 欢迎信息
   showWelcome() {
     console.log('\n' + '='.repeat(60))
-    console.log('🎯 PromptX Mini - AI专业化演示系统')
+    console.log('🎯 PromptX Mini - AI专业化演示系统 (增强版)')
     console.log('='.repeat(60))
     console.log('💡 可用命令:')
-    console.log('  • "创建角色：数据分析师，专门分析数据" - 创建新角色')
-    console.log('  • "创建工具：随机选择器，随机选择一个选项" - 创建新工具')
-    console.log('  • "激活产品经理" - 切换到产品经理角色')
-    console.log('  • "激活架构师" - 切换到架构师角色')
-    console.log('  • "激活内容专家" - 切换到内容专家角色')
-    console.log('  • "计算 2+3*4" - 使用计算器工具')
-    console.log('  • "分析文本: 你好世界" - 使用文本分析工具')
-    console.log('  • "显示状态" - 查看系统状态')
-    console.log('  • "帮助" - 显示详细帮助')
+    console.log('  🎭 角色系统:')
+    console.log('    • "创建角色：数据分析师，专门分析数据" - 创建新角色')
+    console.log('    • "激活产品经理" - 切换到产品经理角色')
+    console.log('  🔧 工具系统:')
+    console.log('    • "创建工具：随机选择器，随机选择一个选项" - 创建新工具')
+    console.log('    • "计算 2+3*4" - 使用计算器工具')
+    console.log('  📝 DPML语言:')
+    console.log('    • "解析: @thought://creative-thinking" - 解析DPML引用')
+    console.log('    • "创建资源: thought://my-thinking" - 创建DPML资源')
+    console.log('  🎒 Pouch导航:')
+    console.log('    • "发现" - 发现系统能力')
+    console.log('    • "显示状态" - 查看系统状态')
+    console.log('    • "帮助" - 显示详细帮助')
     console.log('='.repeat(60) + '\n')
   }
 
@@ -43,13 +53,35 @@ export class PromptXAgent {
     // 记录对话历史
     this.conversationHistory.push({ role: 'user', content: input, timestamp: Date.now() })
 
-    // 意图识别和处理
-    const response = this.parseAndExecute(input)
+    // 首先尝试DPML解析
+    const dpmlResult = this.dpml.parseDPML(input)
+    if (dpmlResult.hasReferences) {
+      console.log('📝 检测到DPML引用，正在解析...')
+      input = dpmlResult.processedContent
+    }
+
+    // 然后通过Pouch进行状态导航
+    const pouchResult = this.pouch.processInput(input)
+    
+    let response
+    if (pouchResult.success) {
+      response = this.handlePouchCommand(pouchResult)
+    } else {
+      // 回退到传统解析
+      response = this.parseAndExecute(input)
+    }
 
     // 记录AI响应
     this.conversationHistory.push({ role: 'assistant', content: response, timestamp: Date.now() })
 
-    console.log(`🤖 AI: ${response}\n`)
+    console.log(`🤖 AI: ${response}`)
+    
+    // 显示PATEOAS导航
+    if (pouchResult.pateoas) {
+      this.showPATEOAS(pouchResult.pateoas)
+    }
+    
+    console.log()
     return response
   }
 
@@ -86,6 +118,20 @@ export class PromptXAgent {
       return this.handleGenericToolUsage(input)
     }
 
+    // DPML语言意图
+    if (lowerInput.includes('解析') && lowerInput.includes('@')) {
+      return this.handleDPMLParsing(input)
+    }
+
+    if (lowerInput.includes('创建资源')) {
+      return this.handleResourceCreation(input)
+    }
+
+    // Pouch导航意图
+    if (lowerInput.includes('发现') || lowerInput.includes('discover')) {
+      return this.handleDiscovery()
+    }
+
     // 系统状态查询
     if (lowerInput.includes('状态') || lowerInput.includes('status')) {
       return this.handleStatusQuery()
@@ -103,6 +149,91 @@ export class PromptXAgent {
 
     // 默认响应
     return this.handleDefault(input)
+  }
+
+  // 处理Pouch命令结果
+  handlePouchCommand(pouchResult) {
+    const { command, purpose, content, message } = pouchResult
+    
+    let response = `🎒 ${command} 锦囊已启动\n`
+    response += `🎯 目的: ${purpose}\n`
+    response += `📋 ${message}\n`
+    
+    if (content && typeof content === 'object') {
+      response += `\n📊 详细信息:\n`
+      Object.entries(content).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          response += `  • ${key}: ${value.join(', ')}\n`
+        } else {
+          response += `  • ${key}: ${value}\n`
+        }
+      })
+    }
+    
+    return response
+  }
+
+  // 显示PATEOAS导航
+  showPATEOAS(pateoas) {
+    console.log('\n🧭 PATEOAS 导航:')
+    console.log(`📍 当前状态: ${pateoas.currentState}`)
+    
+    if (pateoas.nextActions && pateoas.nextActions.length > 0) {
+      console.log('🔗 建议的下一步操作:')
+      pateoas.nextActions.slice(0, 3).forEach((action, index) => {
+        console.log(`  ${index + 1}. ${action.name}: "${action.command}"`)
+        console.log(`     ${action.description}`)
+      })
+    }
+  }
+
+  // 处理DPML解析
+  handleDPMLParsing(input) {
+    const match = input.match(/解析[:：]\s*(.+)/)
+    if (match) {
+      const dpmlContent = match[1]
+      const result = this.dpml.parseDPML(dpmlContent)
+      
+      return `📝 DPML解析结果:\n` +
+             `🔤 原始内容: ${result.originalContent}\n` +
+             `✨ 处理后内容: ${result.processedContent}\n` +
+             `🔗 引用数量: ${result.references.length}个\n` +
+             result.references.map(ref => `  • ${ref.fullRef} (${ref.protocol})`).join('\n')
+    }
+    return '❓ 请提供要解析的DPML内容，例如: "解析: @thought://creative-thinking"'
+  }
+
+  // 处理资源创建
+  handleResourceCreation(input) {
+    const match = input.match(/创建资源[:：]\s*(\w+):\/\/(\w+)\s*(.+)/)
+    if (match) {
+      const [, protocol, name, content] = match
+      const resourceKey = this.dpml.registerResource(protocol, name, content)
+      
+      return `🎆 成功创建DPML资源！\n` +
+             `🔗 资源标识: ${resourceKey}\n` +
+             `📝 资源内容: ${content}\n` +
+             `💡 现在可以使用 @${protocol}://${name} 来引用这个资源！`
+    }
+    return '❓ 请使用正确格式: "创建资源: thought://my-thinking 这是我的思维模式"'
+  }
+
+  // 处理发现命令
+  handleDiscovery() {
+    const roles = this.roleSystem.listRoles()
+    const tools = this.toolSystem.listTools()
+    const resources = this.dpml.listResources()
+    const pouchState = this.pouch.getCurrentState()
+    
+    return `🔍 系统能力全景图:\n\n` +
+           `🎭 可用角色 (${roles.length}个):\n` +
+           roles.map(r => `  • ${r.name}: ${r.description}`).join('\n') +
+           `\n\n🔧 可用工具 (${tools.length}个):\n` +
+           tools.map(t => `  • ${t.name}: ${t.description}`).join('\n') +
+           `\n\n📝 DPML资源 (${resources.length}个):\n` +
+           resources.map(r => `  • ${r.key}: ${r.content}`).join('\n') +
+           `\n\n🎒 Pouch状态: ${pouchState.state}\n` +
+           `📊 可用命令: ${pouchState.availableCommands.join(', ')}`
   }
 
   // 处理角色创建
@@ -245,6 +376,8 @@ export class PromptXAgent {
     const memoryStatus = this.memory.getNetworkStatus()
     const currentRole = this.roleSystem.currentRole
     const tools = this.toolSystem.listTools()
+    const resources = this.dpml.listResources()
+    const pouchState = this.pouch.getCurrentState()
 
     return `📊 系统状态报告:\n\n` +
            `🧠 记忆系统:\n` +
@@ -253,7 +386,9 @@ export class PromptXAgent {
            `  • 热门概念: ${memoryStatus.mostAccessed.map(m => m.concept).join(', ')}\n\n` +
            `🎭 当前角色: ${currentRole ? currentRole.name : '未激活'}\n\n` +
            `🔧 可用工具: ${tools.length}个\n` +
-           `  ${tools.map(t => `• ${t.name} (使用${t.usageCount}次)`).join('\n  ')}`
+           `  ${tools.map(t => `• ${t.name} (使用${t.usageCount}次)`).join('\n  ')}\n\n` +
+           `📝 DPML资源: ${resources.length}个\n` +
+           `🎒 Pouch状态: ${pouchState.state}`
   }
 
   // 处理帮助请求
@@ -261,6 +396,7 @@ export class PromptXAgent {
     // 动态获取当前可用角色
     const roles = this.roleSystem.listRoles()
     const tools = this.toolSystem.listTools()
+    const resources = this.dpml.listResources()
     const memoryStatus = this.memory.getNetworkStatus()
 
     let roleHelp = `🎭 角色系统:\n`
@@ -280,9 +416,22 @@ export class PromptXAgent {
       toolHelp += `  • ${tool.name} - ${tool.description}${type} (使用${tool.usageCount}次)\n`
     })
 
-    return `📚 PromptX Mini 使用指南:\n\n` +
+    let dpmlHelp = `\n📝 DPML语言:\n`
+    dpmlHelp += `  • 解析: @protocol://resource - 解析DPML引用\n`
+    dpmlHelp += `  • 创建资源: protocol://name content - 创建新资源\n`
+    resources.forEach(resource => {
+      const type = resource.isCustom ? ' [自定义]' : ' [内置]'
+      dpmlHelp += `  • ${resource.key}${type}\n`
+    })
+
+    return `📚 PromptX Mini 使用指南 (增强版):\n\n` +
            roleHelp +
            toolHelp +
+           dpmlHelp +
+           `\n🎒 Pouch导航:\n` +
+           `  • 发现 - 发现系统能力\n` +
+           `  • 状态 - 查看系统状态\n` +
+           `  • 自动PATEOAS导航提示\n` +
            `\n🧠 记忆系统:\n` +
            `  • 概念节点: ${memoryStatus.totalNodes}个\n` +
            `  • 连接关系: ${memoryStatus.totalConnections}个\n` +
@@ -330,6 +479,8 @@ export class PromptXAgent {
     return `🤔 我理解您的问题，但建议您:\n` +
            `  1. 激活相关专业角色 (如: "激活产品经理")\n` +
            `  2. 使用具体的工具命令 (如: "计算 1+1")\n` +
-           `  3. 输入 "帮助" 查看详细使用说明`
+           `  3. 尝试DPML语法 (如: "解析: @thought://creative-thinking")\n` +
+           `  4. 使用Pouch导航 (如: "发现")\n` +
+           `  5. 输入 "帮助" 查看详细使用说明`
   }
 }
