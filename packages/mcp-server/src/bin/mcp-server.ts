@@ -11,17 +11,9 @@ process.on('uncaughtException', (err: Error) => {
 
 import { Command } from 'commander'
 import chalk from 'chalk'
-import { readFileSync } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
 import logger from '@promptx/logger'
 import { PromptXMCPServer } from '../servers/PromptXMCPServer.js'
-
-// Get package.json
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-// 修复路径：编译后在dist目录，所以只需要../package.json
-const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'))
+import packageJson from '../../package.json';
 
 // 创建主程序
 const program = new Command()
@@ -42,7 +34,7 @@ program
   .action(async (options) => {
     try {
       logger.info(chalk.cyan(`PromptX MCP Server v${packageJson.version}`))
-      
+
       // 使用 PromptXMCPServer 统一启动
       await PromptXMCPServer.launch({
         transport: options.transport as 'stdio' | 'http',
@@ -52,7 +44,7 @@ program
         corsEnabled: options.cors,
         debug: options.debug
       })
-      
+
     } catch (error) {
       logger.error(`MCP Server startup failed: ${(error as Error).message}`)
       if (options.debug && (error as Error).stack) {

@@ -16,7 +16,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
+    "dev": "tsx src/bin/mcp-server.ts -t http -p 8848",
     "clean": "rimraf dist",
     "test": "vitest",
     "typecheck": "tsc --noEmit"

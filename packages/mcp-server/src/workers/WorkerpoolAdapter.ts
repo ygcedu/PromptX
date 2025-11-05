@@ -1,10 +1,10 @@
 import * as workerpool from 'workerpool';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { 
-  ToolWorkerPool, 
-  PoolStats, 
-  ToolWorkerPoolOptions 
+import {
+  ToolWorkerPool,
+  PoolStats,
+  ToolWorkerPoolOptions
 } from '../interfaces/ToolWorkerPool';
 import { ToolWithHandler } from '../interfaces/MCPServer';
 import logger from '@promptx/logger';
@@ -15,7 +15,7 @@ import logger from '@promptx/logger';
 export class WorkerpoolAdapter implements ToolWorkerPool {
   private pool: workerpool.Pool | null = null;
   private options: Required<ToolWorkerPoolOptions>;
-  
+
   constructor(options: ToolWorkerPoolOptions = {}) {
     this.options = {
       minWorkers: options.minWorkers ?? 2,
@@ -23,7 +23,7 @@ export class WorkerpoolAdapter implements ToolWorkerPool {
       workerTimeout: options.workerTimeout ?? 30000,
     };
   }
-  
+
   /**
    * 初始化 worker pool
    */
@@ -32,11 +32,24 @@ export class WorkerpoolAdapter implements ToolWorkerPool {
       logger.warn('WorkerpoolAdapter: Pool already initialized');
       return;
     }
-    
-    // tsup 会把 worker.ts 编译到 dist/worker.js
-    // WorkerpoolAdapter 会在某个 chunk 文件中，所以用相对路径找 worker.js
-    const workerPath = fileURLToPath(new URL('./worker.js', import.meta.url));
-    
+
+    // 开发模式下使用 dist/worker.js，生产模式下使用相对路径
+    let workerPath: string;
+
+    // 检查当前是否在开发模式（src 目录中运行）
+    const currentFile = fileURLToPath(import.meta.url);
+    const isDevMode = currentFile.includes('src');
+
+    if (isDevMode) {
+      // 开发模式：使用 dist 目录中的编译文件
+      const srcDir = path.dirname(currentFile);
+      const projectRoot = path.resolve(srcDir, '../..');
+      workerPath = path.join(projectRoot, 'dist', 'worker.js');
+    } else {
+      // 生产模式：使用相对路径
+      workerPath = fileURLToPath(new URL('./worker.js', import.meta.url));
+    }
+
     this.pool = workerpool.pool(workerPath, {
       minWorkers: this.options.minWorkers,
       maxWorkers: this.options.maxWorkers,
@@ -47,10 +60,10 @@ export class WorkerpoolAdapter implements ToolWorkerPool {
         cwd: process.cwd(),
       }
     });
-    
+
     logger.info(`WorkerpoolAdapter initialized: ${this.options.minWorkers}-${this.options.maxWorkers} workers`);
   }
-  
+
   /**
    * 执行工具
    */
@@ -58,35 +71,35 @@ export class WorkerpoolAdapter implements ToolWorkerPool {
     if (!this.pool) {
       throw new Error('WorkerpoolAdapter: Pool not initialized. Call initialize() first.');
     }
-    
+
     try {
       logger.debug(`Executing tool '${tool.name}' in worker pool`);
-      
+
       // 准备执行数据（只传递工具名和参数）
       const taskData = {
         toolName: tool.name,
         args
       };
-      
+
       // 在 worker 中执行
       const result = await this.pool.exec('executeTool', [taskData]);
-      
+
       logger.debug(`Tool '${tool.name}' execution completed`);
       return result as T;
-      
+
     } catch (error: any) {
       logger.error(`Tool '${tool.name}' execution failed: ${error.message}`);
-      
+
       // 处理超时错误
       if (error.message?.includes('timeout')) {
         throw new Error(`Tool '${tool.name}' execution timeout after ${this.options.workerTimeout}ms`);
       }
-      
+
       // 重新抛出其他错误
       throw error;
     }
   }
-  
+
   /**
    * 获取 pool 状态
    */
@@ -99,7 +112,7 @@ export class WorkerpoolAdapter implements ToolWorkerPool {
         total: 0
       };
     }
-    
+
     const stats = this.pool.stats();
     return {
       active: stats.activeTasks,
@@ -108,7 +121,7 @@ export class WorkerpoolAdapter implements ToolWorkerPool {
       total: stats.totalWorkers
     };
   }
-  
+
   /**
    * 终止 pool
    */
@@ -117,13 +130,13 @@ export class WorkerpoolAdapter implements ToolWorkerPool {
       logger.warn('WorkerpoolAdapter: No pool to terminate');
       return;
     }
-    
+
     logger.info('Terminating worker pool...');
     await this.pool.terminate();
     this.pool = null;
     logger.info('Worker pool terminated');
   }
-  
+
   /**
    * 判断工具是否需要使用 worker pool
    */
@@ -136,7 +149,7 @@ export class WorkerpoolAdapter implements ToolWorkerPool {
       'compile',         // 编译任务
       'heavy-compute'    // 计算密集型任务
     ];
-    
+
     return isolatedTools.includes(toolName);
   }
 }
