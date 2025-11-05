@@ -4,20 +4,11 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { 
   InitializeRequestSchema,
-  LoggingMessageNotification,
-  JSONRPCNotification,
-  JSONRPCError,
-  Notification,
   ListToolsRequestSchema,
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
-  ReadResourceRequestSchema
+  CallToolRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
-import type { Resource, Tool, Prompt } from '@modelcontextprotocol/sdk/types.js';
 import { BaseMCPServer } from '~/servers/BaseMCPServer.js';
-import type { MCPServerOptions, ToolWithHandler } from '~/interfaces/MCPServer.js';
+import type { MCPServerOptions } from '~/interfaces/MCPServer.js';
 import { WorkerpoolAdapter } from '~/workers/index.js';
 import type { ToolWorkerPool } from '~/interfaces/ToolWorkerPool.js';
 import * as fs from 'fs/promises';
@@ -117,9 +108,7 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
       },
       {
         capabilities: {
-          tools: {},
-          resources: {},
-          prompts: {}
+          tools: {}
         }
       }
     );
@@ -152,44 +141,8 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
       this.logger.debug(`Handling tool call: ${request.params.name}`);
       return this.executeTool(request.params.name, request.params.arguments);
     });
-    
-    // 资源列表请求
-    server.setRequestHandler(ListResourcesRequestSchema, async () => {
-      this.logger.debug('Handling list resources request');
-      return {
-        resources: Array.from(this.resources.values())
-      };
-    });
-    
-    // 读取资源请求
-    server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-      this.logger.debug(`Handling read resource: ${request.params.uri}`);
-      const resource = this.resources.get(request.params.uri);
-      if (!resource) {
-        throw new Error(`Resource not found: ${request.params.uri}`);
-      }
-      return this.readResource(resource);
-    });
-    
-    // 提示词列表请求
-    server.setRequestHandler(ListPromptsRequestSchema, async () => {
-      this.logger.debug('Handling list prompts request');
-      return {
-        prompts: Array.from(this.prompts.values())
-      };
-    });
-    
-    // 获取提示词请求
-    server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-      this.logger.debug(`Handling get prompt: ${request.params.name}`);
-      const prompt = this.prompts.get(request.params.name);
-      if (!prompt) {
-        throw new Error(`Prompt not found: ${request.params.name}`);
-      }
-      return { prompt };
-    });
   }
-  
+
   /**
    * 设置中间件和路由 - 完全仿照官方实现
    */
@@ -555,51 +508,9 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
     
     this.logger.info(`Session cleaned up: ${sessionId}`);
   }
-  
-  /**
-   * 读取资源内容
-   */
-  protected async readResource(resource: Resource): Promise<any> {
-    try {
-      const uri = new URL(resource.uri);
-      
-      if (uri.protocol === 'file:') {
-        const filePath = uri.pathname;
-        const resolvedPath = path.resolve(filePath);
-        const content = await fs.readFile(resolvedPath, 'utf-8');
-        
-        return {
-          contents: [
-            {
-              uri: resource.uri,
-              mimeType: resource.mimeType || 'text/plain',
-              text: content
-            }
-          ]
-        };
-      } else if (uri.protocol === 'http:' || uri.protocol === 'https:') {
-        // 支持HTTP资源
-        const response = await fetch(resource.uri);
-        const content = await response.text();
-        
-        return {
-          contents: [
-            {
-              uri: resource.uri,
-              mimeType: resource.mimeType || response.headers.get('content-type') || 'text/plain',
-              text: content
-            }
-          ]
-        };
-      } else {
-        throw new Error(`Unsupported resource protocol: ${uri.protocol}`);
-      }
-    } catch (error: any) {
-      this.logger.error(`Failed to read resource: ${resource.uri} - ${error}`);
-      throw new Error(`Failed to read resource: ${error.message}`);
-    }
-  }
-  
+
+
+
   /**
    * 重写 executeTool 方法，使用 WorkerPool 执行所有工具
    */

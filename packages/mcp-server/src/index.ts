@@ -44,8 +44,6 @@ export type { PromptXServerOptions } from '~/servers/PromptXMCPServer.js';
 
 // 重新导出SDK类型（方便使用）
 export type {
-  Tool,
-  Resource,
-  Prompt
+  Tool
 } from '@modelcontextprotocol/sdk/types.js';
 

@@ -1,4 +1,4 @@
-import type { Tool, Resource, Prompt } from '@modelcontextprotocol/sdk/types.js';
+import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { Logger } from '@promptx/logger';
 
 /**
@@ -82,7 +82,7 @@ export interface HealthCheckResult {
       status: 'up' | 'down';
       message?: string;
     };
-    resources: {
+    tools: {
       registered: number;
       available: number;
     };
@@ -182,48 +182,7 @@ export interface MCPServer {
    */
   executeTool(name: string, args: any): Promise<any>;
   
-  // ============ 资源管理 ============
-  /**
-   * 注册资源
-   * 不变式：注册后的资源必须可通过getResource获取
-   */
-  registerResource(resource: Resource): void;
-  
-  /**
-   * 注销资源
-   */
-  unregisterResource(uri: string): void;
-  
-  /**
-   * 获取资源
-   */
-  getResource(uri: string): Resource | undefined;
-  
-  /**
-   * 列出所有资源
-   */
-  listResources(): Resource[];
-  
-  // ============ 提示词管理 ============
-  /**
-   * 注册提示词
-   */
-  registerPrompt(prompt: Prompt): void;
-  
-  /**
-   * 注销提示词
-   */
-  unregisterPrompt(name: string): void;
-  
-  /**
-   * 获取提示词
-   */
-  getPrompt(name: string): Prompt | undefined;
-  
-  /**
-   * 列出所有提示词
-   */
-  listPrompts(): Prompt[];
+
   
   // ============ 会话管理 ============
   /**

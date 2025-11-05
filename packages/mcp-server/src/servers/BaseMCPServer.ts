@@ -1,12 +1,8 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import type { Tool, Resource, Prompt } from '@modelcontextprotocol/sdk/types.js';
+import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import {
   ListToolsRequestSchema,
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
-  ReadResourceRequestSchema
+  CallToolRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
 import logger, { type Logger } from '@promptx/logger';
 import type {
@@ -47,8 +43,6 @@ export abstract class BaseMCPServer implements MCPServer {
   
   // 资源存储
   protected tools = new Map<string, ToolWithHandler>();
-  protected resources = new Map<string, Resource>();
-  protected prompts = new Map<string, Prompt>();
   protected sessions = new Map<string, SessionContext>();
   
   // 并发控制
@@ -117,9 +111,7 @@ export abstract class BaseMCPServer implements MCPServer {
    */
   protected buildCapabilities() {
     return {
-      tools: {},  // 始终声明支持工具
-      resources: {},  // 始终声明支持资源
-      prompts: {}  // 始终声明支持提示词
+      tools: {}  // 仅支持工具
     };
   }
   
@@ -140,49 +132,9 @@ export abstract class BaseMCPServer implements MCPServer {
       this.logger.debug(`Handling tool call: ${request.params.name}`);
       return this.executeTool(request.params.name, request.params.arguments);
     });
-    
-    // 资源列表请求
-    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
-      this.logger.debug('Handling list resources request');
-      return {
-        resources: Array.from(this.resources.values())
-      };
-    });
-    
-    // 读取资源请求
-    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-      this.logger.debug(`Handling read resource: ${request.params.uri}`);
-      const resource = this.resources.get(request.params.uri);
-      if (!resource) {
-        throw new Error(`Resource not found: ${request.params.uri}`);
-      }
-      // 子类需要实现实际的资源读取逻辑
-      return this.readResource(resource);
-    });
-    
-    // 提示词列表请求
-    this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
-      this.logger.debug('Handling list prompts request');
-      return {
-        prompts: Array.from(this.prompts.values())
-      };
-    });
-    
-    // 获取提示词请求
-    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-      this.logger.debug(`Handling get prompt: ${request.params.name}`);
-      const prompt = this.prompts.get(request.params.name);
-      if (!prompt) {
-        throw new Error(`Prompt not found: ${request.params.name}`);
-      }
-      return { prompt };
-    });
   }
   
-  /**
-   * 子类需要实现的资源读取方法
-   */
-  protected abstract readResource(resource: Resource): Promise<any>;
+
   
   /**
    * 子类需要实现的传输层连接方法
@@ -361,63 +313,9 @@ export abstract class BaseMCPServer implements MCPServer {
     }
   }
   
-  // ============ 资源管理 ============
+
   
-  registerResource(resource: Resource): void {
-    if (this.resources.has(resource.uri)) {
-      throw new Error(`Resource ${resource.uri} already registered`);
-    }
-    
-    this.resources.set(resource.uri, resource);
-    this.logger.info(`Resource registered: ${resource.uri}`);
-  }
-  
-  unregisterResource(uri: string): void {
-    if (!this.resources.has(uri)) {
-      this.logger.warn(`Resource ${uri} not found for unregistration`);
-      return;
-    }
-    
-    this.resources.delete(uri);
-    this.logger.info(`Resource unregistered: ${uri}`);
-  }
-  
-  getResource(uri: string): Resource | undefined {
-    return this.resources.get(uri);
-  }
-  
-  listResources(): Resource[] {
-    return Array.from(this.resources.values());
-  }
-  
-  // ============ 提示词管理 ============
-  
-  registerPrompt(prompt: Prompt): void {
-    if (this.prompts.has(prompt.name)) {
-      throw new Error(`Prompt ${prompt.name} already registered`);
-    }
-    
-    this.prompts.set(prompt.name, prompt);
-    this.logger.info(`Prompt registered: ${prompt.name}`);
-  }
-  
-  unregisterPrompt(name: string): void {
-    if (!this.prompts.has(name)) {
-      this.logger.warn(`Prompt ${name} not found for unregistration`);
-      return;
-    }
-    
-    this.prompts.delete(name);
-    this.logger.info(`Prompt unregistered: ${name}`);
-  }
-  
-  getPrompt(name: string): Prompt | undefined {
-    return this.prompts.get(name);
-  }
-  
-  listPrompts(): Prompt[] {
-    return Array.from(this.prompts.values());
-  }
+
   
   // ============ 会话管理 ============
   
@@ -493,9 +391,9 @@ export abstract class BaseMCPServer implements MCPServer {
           status: this.isRunning() ? 'up' : 'down',
           message: `Server is ${this.state}`
         },
-        resources: {
-          registered: this.tools.size + this.resources.size + this.prompts.size,
-          available: this.tools.size + this.resources.size + this.prompts.size
+        tools: {
+          registered: this.tools.size,
+          available: this.tools.size
         },
         memory: {
           used: memUsage.heapUsed,
