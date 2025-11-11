@@ -16,6 +16,7 @@ const logger = require('@promptx/logger')
 class RecallCommand extends BasePouchCommand {
   constructor () {
     super()
+    this.useLayerSystem = true
     this.lastSearchCount = 0
     this.resourceManager = getGlobalResourceManager()
     this.cognitionManager = CognitionManager.getInstance(this.resourceManager)
@@ -117,7 +118,7 @@ class RecallCommand extends BasePouchCommand {
     } catch (error) {
       logger.error(` [RecallCommand] 记忆检索失败: ${error.message}`)
       logger.debug(` [RecallCommand] 错误堆栈: ${error.stack}`)
-      
+
       // 错误情况：只创建角色层显示错误
       const roleLayer = new RoleLayer()
       const errorArea = new StateArea(

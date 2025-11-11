@@ -5,12 +5,12 @@ const logger = require('@promptx/logger')
 
 /**
  * BasePouchCommand - 支持Layer和Area双架构的命令基类
- * 
+ *
  * 架构设计：
  * - 支持新的Layer架构：Command → Layers → Areas
  * - 兼容旧的Area架构：Command → Areas
  * - 统一的渲染管道处理所有内容
- * 
+ *
  * 渲染流程：
  * 1. 如果有Layers，按优先级渲染Layers
  * 2. 如果没有Layers但有Areas，直接渲染Areas（兼容模式）
@@ -39,12 +39,12 @@ class BasePouchCommand {
     if (!(area instanceof BaseArea)) {
       throw new Error('Area must extend BaseArea')
     }
-    
+
     // 检查名称唯一性
     if (this.areas.some(a => a.getName() === area.getName())) {
       throw new Error(`Area with name '${area.getName()}' already registered`)
     }
-    
+
     this.areas.push(area)
   }
 
@@ -63,15 +63,14 @@ class BasePouchCommand {
     if (!(layer instanceof BaseLayer)) {
       throw new Error('Layer must extend BaseLayer')
     }
-    
+
     // 检查名称唯一性
     if (this.layers.some(l => l.getName() === layer.getName())) {
       throw new Error(`Layer with name '${layer.getName()}' already registered`)
     }
-    
+
     this.layers.push(layer)
-    this.useLayerSystem = true // 标记使用Layer系统
-    
+
     logger.debug(`[BasePouchCommand] Registered layer: ${layer.getName()}`)
   }
 
@@ -80,7 +79,6 @@ class BasePouchCommand {
    */
   clearLayers() {
     this.layers = []
-    this.useLayerSystem = false
   }
 
   /**
@@ -95,7 +93,7 @@ class BasePouchCommand {
       const purpose = this.getPurpose()
       const content = await this.getContent(args)
       const pateoas = typeof this.getPATEOAS === 'function' ? this.getPATEOAS(args) : null
-      
+
       const legacyArea = new LegacyArea(purpose, content, pateoas)
       this.registerArea(legacyArea)
     } else {
@@ -136,14 +134,14 @@ class BasePouchCommand {
    */
   async renderAreas() {
     const contents = []
-    
+
     for (const area of this.areas) {
       const content = await area.render()
       if (content) {
         contents.push(area.format(content))
       }
     }
-    
+
     return contents.join('')
   }
 
@@ -154,10 +152,10 @@ class BasePouchCommand {
   async renderLayers() {
     // 按优先级排序Layers（数字越小优先级越高）
     const sortedLayers = [...this.layers].sort((a, b) => a.getPriority() - b.getPriority())
-    
+
     const contents = []
     const layerSeparator = '='.repeat(75)
-    
+
     for (let i = 0; i < sortedLayers.length; i++) {
       const layer = sortedLayers[i]
       if (layer.isEnabled()) {
@@ -175,7 +173,7 @@ class BasePouchCommand {
         }
       }
     }
-    
+
     return contents.join('')
   }
 
@@ -188,42 +186,40 @@ class BasePouchCommand {
     // 清空之前的内容
     this.clearAreas()
     this.clearLayers()
-    
-    // 尝试组装Layers（新架构）
-    await this.assembleLayers(args)
-    
-    // 如果没有Layers，尝试组装Areas（兼容模式）
-    if (!this.useLayerSystem) {
-      await this.assembleAreas(args)
-    }
-    
+
     let content = ''
-    
-    // 使用Layer系统渲染
+
+    // 使用Layer系统渲染（action、recall、remember）
     if (this.useLayerSystem) {
       logger.debug('[BasePouchCommand] Using Layer system for rendering')
-      
+
       // 验证Layers
       if (!this.validateLayers()) {
         throw new Error('Layer validation failed')
       }
-      
+
+      // 尝试组装Layers（新架构）
+      await this.assembleLayers(args)
+
       // 渲染Layers
       content = await this.renderLayers()
-    } 
-    // 使用传统Area系统渲染
+    }
+    // 使用传统Area系统渲染（discover、tool...）
     else {
       logger.debug('[BasePouchCommand] Using Area system for rendering')
-      
+
       // 验证Areas
       if (!this.validateAreas()) {
         throw new Error('Area validation failed')
       }
-      
+
+      // 如果没有Layers，尝试组装Areas（兼容模式）
+      await this.assembleAreas(args)
+
       // 渲染Areas
       content = await this.renderAreas()
     }
-    
+
     // 格式化输出
     return this.formatOutput(content)
   }
@@ -242,14 +238,14 @@ class BasePouchCommand {
         format: this.outputFormat
       }
     }
-    
+
     // 人类可读格式
     const output = {
       content,
       context: this.context,
       format: this.outputFormat
     }
-    
+
     return {
       ...output,
       toString() {

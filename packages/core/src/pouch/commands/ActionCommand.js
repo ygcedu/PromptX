@@ -18,6 +18,7 @@ const logger = require('@promptx/logger')
 class ActionCommand extends BasePouchCommand {
   constructor() {
     super()
+    this.useLayerSystem = true
     this.resourceManager = getGlobalResourceManager()
     this.dpmlParser = new DPMLContentParser()
     this.semanticRenderer = new SemanticRenderer()
@@ -43,16 +44,16 @@ class ActionCommand extends BasePouchCommand {
 
     try {
       logger.debug(`[ActionCommand] Starting to activate role: ${roleId}`)
-      
+
       // 初始化 ResourceManager
       if (!this.resourceManager.initialized) {
         await this.resourceManager.initializeWithNewArchitecture()
       }
-      
+
       // 获取角色信息
       const roleInfo = await this.getRoleInfo(roleId)
       logger.debug(`[ActionCommand] getRoleInfo result:`, roleInfo)
-      
+
       if (!roleInfo) {
         logger.warn(`[ActionCommand] Role "${roleId}" does not exist!`)
         const roleLayer = new RoleLayer()
@@ -73,7 +74,7 @@ class ActionCommand extends BasePouchCommand {
 
       // 创建角色层
       const roleLayer = new RoleLayer({ roleId, roleInfo })
-      
+
       // 添加角色区域
       const roleArea = new RoleArea(
         roleId,
@@ -85,11 +86,11 @@ class ActionCommand extends BasePouchCommand {
         roleInfo.metadata?.title || roleId
       )
       roleLayer.addRoleArea(roleArea)
-      
+
       // 添加状态区域
       const stateArea = new StateArea('role_activated')
       roleLayer.addRoleArea(stateArea)
-      
+
       this.registerLayer(roleLayer)
 
     } catch (error) {
@@ -109,16 +110,16 @@ class ActionCommand extends BasePouchCommand {
    */
   async getRoleInfo(roleId) {
     logger.debug(`[ActionCommand] getRoleInfo called, role ID: ${roleId}`)
-    
+
     try {
       logger.debug(`[ActionCommand] ResourceManager state before loadResource call:`, {
         initialized: this.resourceManager.initialized
       })
-      
+
       const result = await this.resourceManager.loadResource(`@role://${roleId}`)
-      
+
       logger.debug(`[ActionCommand] loadResource returned:`, result)
-      
+
       if (!result || !result.success) {
         logger.warn(`[ActionCommand] Role resource not found: @role://${roleId}`)
         return null
@@ -197,7 +198,7 @@ class ActionCommand extends BasePouchCommand {
       try {
         const resourceUrl = `@${ref.protocol}://${ref.resource}`
         const result = await this.resourceManager.loadResource(resourceUrl)
-        
+
         if (result && result.success) {
           const content = result.content
           if (ref.protocol === 'thought') {
