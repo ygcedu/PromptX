@@ -1,6 +1,6 @@
 /**
  * PreinstalledDependenciesManager
- * 
+ *
  * 管理预装依赖，实现依赖复用机制
  * 扫描@promptx/core和@promptx/resource的所有依赖，供工具直接复用
  */
@@ -43,19 +43,19 @@ export class PreinstalledDependenciesManager {
   private scanPreinstalledDependencies(): void {
     // 在运行时，__dirname是dist目录，package.json已复制到dist中
     const packageJsonPath = path.join(__dirname, 'package.json');
-    
+
     if (!fs.existsSync(packageJsonPath)) {
       throw new Error(`[PreinstalledDeps] CRITICAL: package.json not found at: ${packageJsonPath}. Build process may be broken.`);
     }
-    
+
     try {
       const packageContent = fs.readFileSync(packageJsonPath, 'utf8');
       const packageJson = JSON.parse(packageContent);
       const dependencies = packageJson.dependencies || {};
-      
+
       // 记录包路径
       this.packagePaths.set('@promptx/resource', __dirname);
-      
+
       // 扫描所有dependencies
       for (const [depName, version] of Object.entries(dependencies)) {
         // 对于pnpm管理的依赖，我们不检查实际路径
@@ -67,25 +67,14 @@ export class PreinstalledDependenciesManager {
           location: 'pnpm-managed'
         });
       }
-      
+
       logger.debug(`[PreinstalledDeps] Scanned @promptx/resource: found ${Object.keys(dependencies).length} dependencies`);
       logger.info(`[PreinstalledDeps] Found ${this.availableDependencies.size} preinstalled packages`);
       this.logAvailableDependencies();
-      
+
     } catch (error) {
       throw new Error(`[PreinstalledDeps] Failed to parse package.json: ${(error as Error).message}`);
     }
-  }
-
-  /**
-   * 检查是否为Node.js内置模块
-   */
-  private isBuiltinModule(moduleName: string): boolean {
-    const builtins = [
-      'fs', 'path', 'os', 'crypto', 'util', 'stream', 
-      'http', 'https', 'url', 'querystring', 'child_process'
-    ];
-    return builtins.includes(moduleName);
   }
 
   /**
@@ -93,12 +82,12 @@ export class PreinstalledDependenciesManager {
    */
   private logAvailableDependencies(): void {
     const grouped: Record<string, string[]> = {};
-    
+
     for (const [depName, info] of this.availableDependencies) {
       if (!grouped[info.source]) {
         grouped[info.source] = [];
       }
-      grouped[info.source].push(`${depName}@${info.version}`);
+      grouped[info.source]?.push(`${depName}@${info.version}`);
     }
 
     for (const [source, deps] of Object.entries(grouped)) {
@@ -118,7 +107,7 @@ export class PreinstalledDependenciesManager {
 
     for (const [depName, requestedVersion] of Object.entries(toolDependencies)) {
       const available = this.availableDependencies.get(depName);
-      
+
       if (available) {
         // 检查版本兼容性
         if (this.isVersionCompatible(available.version, requestedVersion)) {
@@ -161,7 +150,7 @@ export class PreinstalledDependenciesManager {
     try {
       // 清理版本号，去掉前缀（semver.coerce会处理）
       const availableClean = available.replace(/^[\^~>=<]/, '').trim();
-      
+
       // 使用 semver.satisfies 进行标准的版本范围匹配
       // 这个函数会正确处理 ^, ~, >=, > 等所有npm版本范围语法
       return semver.satisfies(availableClean, requested);
@@ -198,14 +187,14 @@ export class PreinstalledDependenciesManager {
 
     try {
       logger.info(`[PreinstalledDeps] Loading preinstalled module: ${moduleName}`);
-      
+
       // 创建一个从 @promptx/resource 位置的 require
       // 这样可以正确解析预装在 resource 包中的依赖
       const { createRequire } = require('module');
       // 使用源目录的package.json路径，因为node_modules在源目录
       const sourceDir = path.resolve(__dirname, '..'); // 从dist回到packages/resource
       const resourcePackageJson = path.join(sourceDir, 'package.json');
-      
+
       // 验证文件是否存在
       if (!fs.existsSync(resourcePackageJson)) {
         logger.error(`[PreinstalledDeps] package.json not found at: ${resourcePackageJson}`);
@@ -213,21 +202,21 @@ export class PreinstalledDependenciesManager {
         logger.error(`[PreinstalledDeps] sourceDir is: ${sourceDir}`);
         throw new Error(`package.json not found at: ${resourcePackageJson}`);
       }
-      
+
       logger.info(`[PreinstalledDeps] Using package.json at: ${resourcePackageJson}`);
       const requireFromResource = createRequire(resourcePackageJson);
-      
+
       // 获取模块的实际路径
       const modulePath = requireFromResource.resolve(moduleName);
       logger.debug(`[PreinstalledDeps] Module resolved to: ${modulePath}`);
-      
+
       // 检查包的类型（通过读取其 package.json）
       let isESModule = false;
       try {
         // 找到模块的 package.json
         const moduleDir = path.dirname(modulePath);
         let currentDir = moduleDir;
-        
+
         // 向上查找 package.json
         while (currentDir !== path.dirname(currentDir)) {
           const pkgPath = path.join(currentDir, 'package.json');
@@ -245,7 +234,7 @@ export class PreinstalledDependenciesManager {
       } catch (e) {
         logger.debug(`[PreinstalledDeps] Could not determine module type, assuming CommonJS`);
       }
-      
+
       let module;
       if (isESModule) {
         // ES Module - 使用 import
@@ -256,12 +245,12 @@ export class PreinstalledDependenciesManager {
         logger.debug(`[PreinstalledDeps] Loading as CommonJS: ${moduleName}`);
         module = requireFromResource(moduleName);
       }
-      
+
       // 缓存并返回
       this.loadedModules.set(moduleName, module);
       logger.info(`[PreinstalledDeps] Successfully loaded ${isESModule ? 'ESM' : 'CommonJS'} module: ${moduleName}`);
       return module;
-      
+
     } catch (error: any) {
       logger.error(`[PreinstalledDeps] Failed to load module ${moduleName}: ${error.message}`);
       return null;
@@ -287,7 +276,7 @@ export class PreinstalledDependenciesManager {
     const packageName = this.extractPackageName(moduleName);
     return this.availableDependencies.has(packageName);
   }
-  
+
   /**
    * 从模块路径中提取包名
    */
