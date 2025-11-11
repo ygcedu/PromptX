@@ -16,7 +16,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "dev": "tsx watch  --include ../core/src src/bin/mcp-server.ts -t http -p 8848",
+    "dev": "tsx watch  --include ../core/src src/bin/mcp-server.ts -t http -p 8848 --cors",
     "clean": "rimraf dist",
     "test": "vitest",
     "typecheck": "tsc --noEmit"

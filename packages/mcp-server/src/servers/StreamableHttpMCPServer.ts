@@ -148,6 +148,30 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
   private setupExpress(): void {
     if (!this.app) return;
 
+    // CORS 中间件 - 如果启用了 CORS
+    if (this.corsEnabled) {
+      this.app.use((req, res, next) => {
+        // 允许所有来源
+        res.header('Access-Control-Allow-Origin', '*');
+        
+        // 允许的请求头
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, mcp-session-id');
+        
+        // 允许的请求方法
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        
+        // 预检请求处理
+        if (req.method === 'OPTIONS') {
+          res.status(200).end();
+          return;
+        }
+        
+        next();
+      });
+      
+      this.logger.info('CORS enabled for all origins');
+    }
+
     // 仿照官方：只有基础的 JSON 解析
     this.app.use(express.json());
 
