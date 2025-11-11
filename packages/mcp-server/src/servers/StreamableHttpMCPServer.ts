@@ -160,8 +160,8 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
     });
 
     // PromptX 资源状态查询端点
-    router.get('/status', (req, res) => {
-      this.handleStatusQuery(req, res);
+    router.get('/status', async (req, res) => {
+      await this.handleStatusQuery(req, res);
     });
 
     // 仿照官方：路由定义
@@ -208,7 +208,7 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
     return packageJson.version || 'unknown';
   }
 
-  private handleStatusQuery(req: Request, res: Response): void {
+  private async handleStatusQuery(req: Request, res: Response): Promise<void> {
     try {
       // 获取 Worker Pool 统计信息
       const workerStats = this.workerPool.getStats();
@@ -220,6 +220,9 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
         inputSchema: tool.inputSchema || {},
         usesWorkerPool: WorkerpoolAdapter.shouldUsePool(name)
       }));
+
+      // 获取 PromptX 资源信息
+      const promptxResources = await this.getPromptXResources();
 
       const statusResponse = {
         // 基本服务信息
@@ -269,13 +272,16 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
           }
         },
 
-        // 工具统计
-        tools: {
+        // MCP 工具统计
+        mcpTools: {
           total: this.tools.size,
           workerPoolTools: toolsInfo.filter(t => t.usesWorkerPool).length,
           directTools: toolsInfo.filter(t => !t.usesWorkerPool).length,
           list: toolsInfo
-        }
+        },
+
+        // PromptX 资源统计
+        promptxResources
       };
 
       res.status(200).json(statusResponse);
@@ -288,6 +294,118 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
         timestamp: new Date().toISOString()
       });
     }
+  }
+
+  /**
+   * 获取 PromptX 资源信息（角色和工具）
+   */
+  private async getPromptXResources(): Promise<any> {
+    try {
+      // 直接使用 core 模块的 ResourceManager API
+      const core = await import('@promptx/core');
+      const coreExports = core.default || core;
+
+      // 获取 ResourceManager
+      const getGlobalResourceManager = coreExports.resource?.getGlobalResourceManager;
+      if (!getGlobalResourceManager) {
+        throw new Error('getGlobalResourceManager not found in @promptx/core.resource');
+      }
+
+      const resourceManager = getGlobalResourceManager();
+
+      // 刷新资源以获取最新数据
+      await resourceManager.initializeWithNewArchitecture();
+
+      // 直接从 ResourceManager 获取结构化数据
+      const roles = resourceManager.registryData.getResourcesByProtocol('role');
+      const tools = resourceManager.registryData.getResourcesByProtocol('tool');
+
+      // 按来源分类
+      const categorizeBySource = (resources: any[]) => {
+        const categories = {
+          system: [] as any[],
+          project: [] as any[],
+          user: [] as any[]
+        };
+
+        resources.forEach(resource => {
+          const source = this.normalizeResourceSource(resource.source);
+          categories[source].push({
+            id: resource.id,
+            name: resource.name || resource.title || resource.id,
+            description: resource.description || 'No description',
+            activateCommand: resource.protocol === 'role' ? `action("${resource.id}")` : undefined,
+            manualCommand: resource.protocol === 'tool' ? `toolx("@tool://${resource.id}", mode: 'manual')` : undefined,
+            executeCommand: resource.protocol === 'tool' ? `toolx("@tool://${resource.id}", parameters)` : undefined
+          });
+        });
+
+        return categories;
+      };
+
+      const roleCategories = categorizeBySource(roles);
+      const toolCategories = categorizeBySource(tools);
+
+      // 构建结果
+      return {
+        roles: {
+          system: roleCategories.system,
+          project: roleCategories.project,
+          user: roleCategories.user
+        },
+        tools: {
+          system: toolCategories.system,
+          project: toolCategories.project,
+          user: toolCategories.user
+        },
+        summary: {
+          totalRoles: roles.length,
+          totalTools: tools.length,
+          system: roleCategories.system.length,
+          user: roleCategories.user.length,
+          systemTools: toolCategories.system.length,
+          userTools: toolCategories.user.length,
+          projectRoles: roleCategories.project.length,
+          projectTools: toolCategories.project.length
+        }
+      };
+
+    } catch (error: any) {
+      this.logger.warn(`Failed to load PromptX resources: ${error.message}`);
+      return {
+        error: 'Failed to load PromptX resources',
+        message: error.message,
+        roles: { system: [], project: [], user: [] },
+        tools: { system: [], project: [], user: [] },
+        summary: {
+          totalRoles: 0,
+          totalTools: 0,
+          system: 0,
+          user: 0,
+          systemTools: 0,
+          userTools: 0,
+          projectRoles: 0,
+          projectTools: 0
+        }
+      };
+    }
+  }
+
+  /**
+   * 标准化资源来源
+   */
+  private normalizeResourceSource(source: string): 'system' | 'project' | 'user' {
+    if (!source) return 'system';
+
+    const lowerSource = String(source).toLowerCase();
+
+    if (lowerSource === 'user') return 'user';
+    if (lowerSource === 'project') return 'project';
+    if (['package', 'merged', 'fallback', 'system'].includes(lowerSource)) {
+      return 'system';
+    }
+
+    return 'system';
   }
 
   /**
@@ -594,8 +712,6 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
 
     this.logger.info(`Session cleaned up: ${sessionId}`);
   }
-
-
 
   /**
    * 重写 executeTool 方法，使用 WorkerPool 执行所有工具
