@@ -22,14 +22,14 @@ function Roles() {
   if (hasError) {
     return (
       <div className="card">
-        <h2 style={{ color: '#dc3545' }}>Error Loading Roles</h2>
+        <h2 style={{ color: '#dc3545' }}>加载角色错误</h2>
         <p>{error}</p>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={refresh} className="btn btn-primary">
-            Retry
+            重试
           </button>
           <button onClick={clearError} className="btn btn-secondary">
-            Clear Error
+            清除错误
           </button>
         </div>
       </div>
@@ -39,34 +39,34 @@ function Roles() {
   return (
     <div>
       <div className="text-center mb-4">
-        <h1 style={{ color: 'white' }}>AI Roles</h1>
+        <h1 style={{ color: 'white' }}>AI 角色</h1>
         <p style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-          Manage and activate AI roles for different tasks and scenarios
+          管理和激活不同任务和场景的 AI 角色
         </p>
       </div>
 
       <div className="card mb-4">
-        <h2>📊 Role Statistics</h2>
+        <h2>📊 角色统计</h2>
         <div className="grid grid-3">
           <div className="text-center">
             <h3 style={{ color: '#667eea' }}>{stats.systemRoles}</h3>
-            <p className="text-muted">System Roles</p>
+            <p className="text-muted">系统角色</p>
           </div>
           <div className="text-center">
             <h3 style={{ color: '#28a745' }}>{stats.userRoles}</h3>
-            <p className="text-muted">User Roles</p>
+            <p className="text-muted">用户角色</p>
           </div>
           <div className="text-center">
             <h3 style={{ color: '#ffc107' }}>{stats.projectRoles}</h3>
-            <p className="text-muted">Project Roles</p>
+            <p className="text-muted">项目角色</p>
           </div>
         </div>
       </div>
 
       {roles.system.length > 0 && (
         <div className="card mb-4">
-          <h2>📦 System Roles</h2>
-          <p className="text-muted mb-4">Built-in roles provided by PromptX</p>
+          <h2>📦 系统角色</h2>
+          <p className="text-muted mb-4">由 PromptX 提供的内置角色</p>
           <div className="grid grid-2">
             {roles.system.map((role) => (
               <div key={role.id} style={{ 
@@ -91,8 +91,8 @@ function Roles() {
 
       {roles.user.length > 0 && (
         <div className="card mb-4">
-          <h2>👤 User Roles</h2>
-          <p className="text-muted mb-4">Custom roles created by Nuwa</p>
+          <h2>👤 用户角色</h2>
+          <p className="text-muted mb-4">由女娲创建的自定义角色</p>
           <div className="grid grid-2">
             {roles.user.map((role) => (
               <div key={role.id} style={{ 
@@ -117,10 +117,10 @@ function Roles() {
 
       {roles.project.length === 0 && roles.user.length === 0 && roles.system.length === 0 && (
         <div className="card text-center">
-          <h3>No Roles Found</h3>
-          <p className="text-muted">No roles are currently available.</p>
+          <h3>未找到角色</h3>
+          <p className="text-muted">当前没有可用的角色。</p>
           <button onClick={refresh} className="btn btn-primary">
-            Refresh
+            刷新
           </button>
         </div>
       )}

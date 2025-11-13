@@ -1,8 +1,6 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { PromptXProvider } from './contexts/PromptXContext'
 import Layout from './components/Layout'
-import ApiStatus from './components/Debug/ApiStatus'
-import Home from './pages/Home'
 import Roles from './pages/Roles'
 import Tools from './pages/Tools'
 import Status from './pages/Status'
@@ -13,13 +11,12 @@ function App() {
     <PromptXProvider>
       <Layout>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Navigate to="/roles" replace />} />
           <Route path="/roles" element={<Roles />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/status" element={<Status />} />
         </Routes>
       </Layout>
-      <ApiStatus />
     </PromptXProvider>
   )
 }
