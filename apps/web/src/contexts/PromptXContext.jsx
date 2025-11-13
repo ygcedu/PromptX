@@ -147,6 +147,19 @@ export function PromptXProvider({ children }) {
     dispatch({ type: ACTIONS.CLEAR_ERROR })
   }
 
+  // 获取角色详情
+  const fetchRoleDetails = async (roleId, source = 'system') => {
+    try {
+      console.log(`🎭 Fetching role details for: ${roleId}`)
+      const roleDetails = await apiService.getRoleDetails(roleId, source)
+      console.log('✅ Role details fetched successfully:', roleDetails)
+      return roleDetails
+    } catch (error) {
+      console.error('❌ Failed to fetch role details:', error)
+      throw error
+    }
+  }
+
   // 刷新数据
   const refresh = () => {
     fetchStatus()
@@ -165,6 +178,7 @@ export function PromptXProvider({ children }) {
     // 方法
     refresh,
     clearError,
+    fetchRoleDetails,
     
     // 便捷访问器
     isLoading: state.loading,

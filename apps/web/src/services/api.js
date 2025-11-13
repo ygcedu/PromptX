@@ -16,7 +16,7 @@ class ApiService {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`
-    
+
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -28,14 +28,14 @@ class ApiService {
     try {
       console.log(`🚀 Making API request to: ${url}`)
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`)
       }
-      
-      const data = await response.json()
-      console.log(`✅ API request successful: ${endpoint}`)
-      return data
+
+        const data = await response.json()
+        console.log(`✅ API request successful: ${endpoint}`)
+        return data
     } catch (error) {
       console.error(`❌ API request failed: ${endpoint}`, error)
       throw error
@@ -50,6 +50,30 @@ class ApiService {
   // Get health check
   async getHealth() {
     return this.request('/health')
+  }
+
+  // Get role details using the new simple API endpoint
+  async getRoleDetails(roleId, source = 'system') {
+    try {
+      console.log(`🎭 Getting role details for: ${roleId} (${source})`)
+
+      const response = await this.request(`/roles/${roleId}?source=${source}`)
+
+      if (response && response.success && response.data) {
+        console.log('✅ Role details fetched successfully:', response.data)
+        return response.data
+      }
+
+      // 如果有错误信息，抛出错误
+      if (response && !response.success) {
+        throw new Error(response.message || 'Failed to get role details')
+      }
+
+      throw new Error('No role details returned')
+    } catch (error) {
+      console.error(`❌ Failed to get role details for ${roleId}:`, error)
+      throw error
+    }
   }
 
   // Get current configuration
@@ -69,4 +93,5 @@ export default apiService
 // Named exports for specific functions
 export const getStatus = () => apiService.getStatus()
 export const getHealth = () => apiService.getHealth()
+export const getRoleDetails = (roleId, source) => apiService.getRoleDetails(roleId, source)
 export const getApiConfig = () => apiService.getConfig()

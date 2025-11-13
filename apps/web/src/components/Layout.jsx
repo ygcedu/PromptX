@@ -16,56 +16,34 @@ function Layout({ children }) {
 
   return (
     <div className="app">
-      <nav style={{
-        background: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-        padding: '16px 0'
-      }}>
+      <nav className="bg-white/10 backdrop-blur-md border-b border-white/20 py-4">
         <div className="container">
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <Link to="/roles" style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: 'white',
-              textDecoration: 'none'
-            }}>
+          <div className="flex justify-between items-center">
+            <Link 
+              to="/roles" 
+              className="text-2xl font-bold text-white no-underline hover:no-underline"
+            >
               PromptX
             </Link>
-            <div style={{ display: 'flex', gap: '24px' }}>
+            <div className="flex gap-6">
               {getNavigationItems().map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
-                  style={{
-                    color: location.pathname === item.href ? '#fff' : 'rgba(255, 255, 255, 0.8)',
-                    textDecoration: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    background: location.pathname === item.href ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    position: 'relative'
-                  }}
+                  className={`
+                    no-underline px-4 py-2 rounded-lg transition-all duration-200 
+                    flex items-center gap-2 relative hover:no-underline
+                    ${
+                      location.pathname === item.href 
+                        ? 'text-white bg-white/20' 
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
+                    }
+                  `}
                 >
                   <span>{item.icon}</span>
                   <span>{item.name}</span>
                   {typeof item.count === 'number' && (
-                    <span style={{
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      color: 'white',
-                      fontSize: '12px',
-                      fontWeight: '500',
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      marginLeft: '4px'
-                    }}>
+                    <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full ml-1">
                       {item.count}
                     </span>
                   )}
@@ -75,20 +53,14 @@ function Layout({ children }) {
           </div>
         </div>
       </nav>
-
-      <main style={{ padding: '40px 0' }}>
+      
+      <main className="py-10">
         <div className="container">
           {children}
         </div>
       </main>
-
-      <footer style={{
-        background: 'rgba(0, 0, 0, 0.1)',
-        color: 'rgba(255, 255, 255, 0.8)',
-        padding: '24px 0',
-        textAlign: 'center',
-        marginTop: 'auto'
-      }}>
+      
+      <footer className="bg-black/10 text-white/80 py-6 text-center mt-auto">
         <div className="container">
           <p>© 2024 Deepractice. PromptX v{__APP_VERSION__ || '1.25.2'}</p>
         </div>

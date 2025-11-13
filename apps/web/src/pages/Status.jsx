@@ -37,9 +37,9 @@ function Status() {
   if (hasError) {
     return (
       <div className="card">
-        <h2 style={{ color: '#dc3545' }}>加载状态错误</h2>
+        <h2 className="text-red-500">加载状态错误</h2>
         <p>{error}</p>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="flex gap-3">
           <button onClick={refresh} className="btn btn-primary">
             重试
           </button>
@@ -62,229 +62,275 @@ function Status() {
 
   return (
     <div>
-      <div className="text-center mb-4">
-        <h1 style={{ color: 'white' }}>系统状态</h1>
-        <p style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-          监控 PromptX MCP 服务器状态和性能指标
-        </p>
-        <div style={{ marginTop: '16px', display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center' }}>
-          <button 
-            onClick={refresh} 
-            className="btn btn-secondary"
-            disabled={isLoading}
-          >
-            {isLoading ? '刷新中...' : '刷新状态'}
-          </button>
-          {lastUpdated && (
-            <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
-              最后更新： {new Date(lastUpdated).toLocaleTimeString()}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-2 mb-4">
-        <div className="card">
-          <h3>🚀 服务信息</h3>
-          <div style={{ display: 'grid', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>名称：</span>
-              <strong>{service.name}</strong>
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 mb-8 shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
+              📊
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>版本：</span>
-              <span className="badge badge-primary">{service.version}</span>
+            <div>
+              <h1 className="text-2xl font-bold text-white leading-tight">系统状态</h1>
+              <p className="text-white/80 text-sm leading-tight">
+                监控 PromptX MCP 服务器状态和性能指标
+              </p>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>状态：</span>
-              <span className={`badge ${service.status === 'running' ? 'badge-success' : 'badge-danger'}`}>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
+              <div className={`w-3 h-3 rounded-full ${
+                service.status === 'running' ? 'bg-green-300' : 'bg-red-300'
+              }`}></div>
+              <span className="text-white font-medium text-sm">
                 {service.status === 'running' ? '运行中' : service.status}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>传输：</span>
-              <span>{service.transport}</span>
+            <button 
+              onClick={refresh} 
+              className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-200 text-sm font-medium"
+              disabled={isLoading}
+            >
+              {isLoading ? '刷新中...' : '刷新'}
+            </button>
+            {lastUpdated && (
+              <span className="text-white/70 text-xs">
+                {new Date(lastUpdated).toLocaleTimeString()}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg">
+              🚀
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>地址：</span>
-              <span>{service.host}:{service.port}</span>
+            <h3 className="text-lg font-bold text-gray-900">服务信息</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-blue-100">
+              <span className="text-gray-600 text-sm">名称</span>
+              <span className="font-semibold text-gray-900">{service.name}</span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-blue-100">
+              <span className="text-gray-600 text-sm">版本</span>
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {service.version}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-blue-100">
+              <span className="text-gray-600 text-sm">状态</span>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                service.status === 'running' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {service.status === 'running' ? '运行中' : service.status}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-blue-100">
+              <span className="text-gray-600 text-sm">传输</span>
+              <span className="font-medium text-gray-900">{service.transport}</span>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-gray-600 text-sm">地址</span>
+              <span className="font-mono text-sm text-gray-900">{service.host}:{service.port}</span>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <h3>🌍 环境信息</h3>
-          <div style={{ display: 'grid', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>Node.js：</span>
-              <span>{environment.nodeVersion}</span>
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg">
+              🌍
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>平台：</span>
-              <span>{environment.platform}</span>
+            <h3 className="text-lg font-bold text-gray-900">环境信息</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-emerald-100">
+              <span className="text-gray-600 text-sm">Node.js</span>
+              <span className="font-semibold text-gray-900">{environment.nodeVersion}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>架构：</span>
-              <span>{environment.arch}</span>
+            <div className="flex justify-between items-center py-2 border-b border-emerald-100">
+              <span className="text-gray-600 text-sm">平台</span>
+              <span className="font-medium text-gray-900">{environment.platform}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>进程 ID：</span>
-              <span>{environment.pid}</span>
+            <div className="flex justify-between items-center py-2 border-b border-emerald-100">
+              <span className="text-gray-600 text-sm">架构</span>
+              <span className="font-medium text-gray-900">{environment.arch}</span>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-gray-600 text-sm">进程 ID</span>
+              <span className="font-mono text-sm text-gray-900">{environment.pid}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-2 mb-4">
-        <div className="card">
-          <h3>📊 请求指标</h3>
-          <div style={{ display: 'grid', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>总请求数：</span>
-              <strong>{metrics.requests.total.toLocaleString()}</strong>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg">
+              📊
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>错误数：</span>
-              <span style={{ color: metrics.requests.errors > 0 ? '#dc3545' : '#28a745' }}>
+            <h3 className="text-lg font-bold text-gray-900">请求指标</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-purple-100">
+              <span className="text-gray-600 text-sm">总请求数</span>
+              <span className="font-bold text-lg text-gray-900">{metrics.requests.total.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-purple-100">
+              <span className="text-gray-600 text-sm">错误数</span>
+              <span className={`font-semibold ${
+                metrics.requests.errors > 0 ? 'text-red-600' : 'text-green-600'
+              }`}>
                 {metrics.requests.errors}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>成功率：</span>
-              <span className="badge badge-success">{metrics.requests.successRate}</span>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-gray-600 text-sm">成功率</span>
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                {metrics.requests.successRate}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <h3>⚙️ 工作线程池</h3>
-          <div style={{ display: 'grid', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>状态：</span>
-              <span className="badge badge-success">{workerPool.status === 'initialized' ? '已初始化' : workerPool.status}</span>
+        <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg">
+              ⚙️
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>活跃工作线程：</span>
-              <strong>{workerPool.workers.active}/{workerPool.workers.total}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>等待中：</span>
-              <span>{workerPool.workers.pending}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>可用：</span>
-              <span>{workerPool.workers.available}</span>
-            </div>
+            <h3 className="text-lg font-bold text-gray-900">工作线程池</h3>
           </div>
-        </div>
-      </div>
-
-      <div className="grid grid-2 mb-4">
-        <div className="card">
-          <h3>🔧 MCP 工具</h3>
-          <div style={{ display: 'grid', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>总工具数：</span>
-              <strong>{mcpTools.total}</strong>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-orange-100">
+              <span className="text-gray-600 text-sm">状态</span>
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                {workerPool.status === 'initialized' ? '已初始化' : workerPool.status}
+              </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>工作线程池工具：</span>
-              <span>{mcpTools.workerPoolTools}</span>
+            <div className="flex justify-between items-center py-2 border-b border-orange-100">
+              <span className="text-gray-600 text-sm">活跃线程</span>
+              <span className="font-bold text-lg text-gray-900">{workerPool.workers.active}/{workerPool.workers.total}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>直接工具：</span>
-              <span>{mcpTools.directTools}</span>
+            <div className="flex justify-between items-center py-2 border-b border-orange-100">
+              <span className="text-gray-600 text-sm">等待中</span>
+              <span className="font-medium text-gray-900">{workerPool.workers.pending}</span>
             </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <h3>🎭 PromptX 资源</h3>
-          <div style={{ display: 'grid', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>总角色数：</span>
-              <strong>{stats.totalRoles}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>系统角色：</span>
-              <span className="badge badge-primary">{stats.systemRoles}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>用户角色：</span>
-              <span className="badge badge-success">{stats.userRoles}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>总工具数：</span>
-              <strong>{stats.totalTools}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>系统工具：</span>
-              <span className="badge badge-primary">{stats.systemTools}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>用户工具：</span>
-              <span className="badge badge-success">{stats.userTools}</span>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-gray-600 text-sm">可用</span>
+              <span className="font-medium text-gray-900">{workerPool.workers.available}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="card">
-        <h3>📈 系统健康</h3>
-        <div className="grid grid-3">
-          <div className="text-center">
-            <div style={{ 
-              width: '60px', 
-              height: '60px', 
-              borderRadius: '50%', 
-              background: service.status === 'running' ? '#28a745' : '#dc3545',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 12px',
-              color: 'white',
-              fontSize: '24px'
-            }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg">
+              🔧
+            </div>
+            <h3 className="text-lg font-bold text-gray-900">MCP 工具</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-cyan-100">
+              <span className="text-gray-600 text-sm">总工具数</span>
+              <span className="font-bold text-lg text-gray-900">{mcpTools.total}</span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-cyan-100">
+              <span className="text-gray-600 text-sm">线程池工具</span>
+              <span className="font-medium text-gray-900">{mcpTools.workerPoolTools}</span>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-gray-600 text-sm">直接工具</span>
+              <span className="font-medium text-gray-900">{mcpTools.directTools}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg">
+              🎭
+            </div>
+            <h3 className="text-lg font-bold text-gray-900">PromptX 资源</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-rose-100">
+              <span className="text-gray-600 text-sm">总角色数</span>
+              <span className="font-bold text-lg text-gray-900">{stats.totalRoles}</span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-rose-100">
+              <span className="text-gray-600 text-sm">系统角色</span>
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {stats.systemRoles}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-rose-100">
+              <span className="text-gray-600 text-sm">用户角色</span>
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                {stats.userRoles}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-rose-100">
+              <span className="text-gray-600 text-sm">总工具数</span>
+              <span className="font-bold text-lg text-gray-900">{stats.totalTools}</span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-rose-100">
+              <span className="text-gray-600 text-sm">系统工具</span>
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {stats.systemTools}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-gray-600 text-sm">用户工具</span>
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                {stats.userTools}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-slate-700 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg">
+            📈
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">系统健康</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center bg-white rounded-xl p-4 border border-gray-100 hover:shadow-md transition-all duration-200">
+            <div className={`
+              w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-white text-2xl shadow-lg
+              ${service.status === 'running' ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-red-500 to-rose-600'}
+            `}>
               {service.status === 'running' ? '✓' : '✗'}
             </div>
-            <h4>服务</h4>
-            <p className="text-muted">{service.status === 'running' ? '运行中' : service.status}</p>
+            <h4 className="font-semibold text-gray-900 mb-1">服务</h4>
+            <p className="text-sm text-gray-600">{service.status === 'running' ? '运行中' : service.status}</p>
           </div>
-          <div className="text-center">
-            <div style={{ 
-              width: '60px', 
-              height: '60px', 
-              borderRadius: '50%', 
-              background: workerPool.status === 'initialized' ? '#28a745' : '#dc3545',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 12px',
-              color: 'white',
-              fontSize: '24px'
-            }}>
+          <div className="text-center bg-white rounded-xl p-4 border border-gray-100 hover:shadow-md transition-all duration-200">
+            <div className={`
+              w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-white text-2xl shadow-lg
+              ${workerPool.status === 'initialized' ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-red-500 to-rose-600'}
+            `}>
               {workerPool.status === 'initialized' ? '✓' : '✗'}
             </div>
-            <h4>工作线程池</h4>
-            <p className="text-muted">{workerPool.status === 'initialized' ? '已初始化' : workerPool.status}</p>
+            <h4 className="font-semibold text-gray-900 mb-1">线程池</h4>
+            <p className="text-sm text-gray-600">{workerPool.status === 'initialized' ? '已初始化' : workerPool.status}</p>
           </div>
-          <div className="text-center">
-            <div style={{ 
-              width: '60px', 
-              height: '60px', 
-              borderRadius: '50%', 
-              background: parseFloat(metrics.requests.successRate) > 95 ? '#28a745' : '#ffc107',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 12px',
-              color: 'white',
-              fontSize: '24px'
-            }}>
+          <div className="text-center bg-white rounded-xl p-4 border border-gray-100 hover:shadow-md transition-all duration-200">
+            <div className={`
+              w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-white text-2xl shadow-lg
+              ${parseFloat(metrics.requests.successRate) > 95 ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-yellow-500 to-orange-600'}
+            `}>
               {parseFloat(metrics.requests.successRate) > 95 ? '✓' : '!'}
             </div>
-            <h4>成功率</h4>
-            <p className="text-muted">{metrics.requests.successRate}</p>
+            <h4 className="font-semibold text-gray-900 mb-1">成功率</h4>
+            <p className="text-sm text-gray-600">{metrics.requests.successRate}</p>
           </div>
         </div>
       </div>

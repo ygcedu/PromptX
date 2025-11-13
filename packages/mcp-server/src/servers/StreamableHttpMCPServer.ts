@@ -188,6 +188,11 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
       await this.handleStatusQuery(req, res);
     });
 
+    // 角色详情查询端点
+    router.get('/roles/:roleId', async (req, res) => {
+      await this.handleRoleDetailsQuery(req, res);
+    });
+
     // 仿照官方：路由定义
     router.post('/mcp', async (req, res) => {
       await this.handlePostRequest(req, res);
@@ -317,6 +322,161 @@ export class StreamableHttpMCPServer extends BaseMCPServer {
         message: error.message,
         timestamp: new Date().toISOString()
       });
+    }
+  }
+
+  /**
+   * 处理角色详情查询请求
+   */
+  private async handleRoleDetailsQuery(req: Request, res: Response): Promise<void> {
+    try {
+      const { roleId } = req.params;
+      const source = req.query.source as string || 'system';
+      
+      this.logger.info(`Getting role details for: ${roleId} (${source})`);
+      
+      // 直接从资源管理器获取角色原始数据
+      const roleDetails = await this.getRoleFromResourceManager(roleId, source);
+      
+      res.status(200).json({
+        success: true,
+        data: roleDetails,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error: any) {
+      this.logger.error(`Error handling role details query: ${error.message}`);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get role details',
+        message: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
+   * 从资源管理器获取角色原始数据
+   */
+  private async getRoleFromResourceManager(roleId: string, source: string): Promise<any> {
+    try {
+      // 直接使用 core 模块的 ResourceManager API
+      const core = await import('@promptx/core');
+      const coreExports = core.default || core;
+
+      // 获取 ResourceManager
+      const getGlobalResourceManager = coreExports.resource?.getGlobalResourceManager;
+      if (!getGlobalResourceManager) {
+        throw new Error('getGlobalResourceManager not found in @promptx/core.resource');
+      }
+
+      const resourceManager = getGlobalResourceManager();
+
+      // 刷新资源以获取最新数据
+      await resourceManager.initializeWithNewArchitecture();
+
+      // 获取所有角色资源
+      const roles = resourceManager.registryData.getResourcesByProtocol('role');
+      
+      // 查找指定角色
+      const role = roles.find((r: any) => r.id === roleId);
+      if (!role) {
+        throw new Error(`Role '${roleId}' not found`);
+      }
+
+      this.logger.info(`Found role: ${JSON.stringify(role, null, 2)}`);
+
+      // 直接使用 ResourceManager 的 loadResource 方法获取完整内容
+      let prompt = '暂无提示词内容';
+      let capabilities: string[] = [];
+      let examples: string[] = [];
+      let version = '1.0.0';
+      
+      try {
+        // 使用 ResourceManager 的 loadResource 方法
+        const loadedRole = await resourceManager.loadResource(role.id, 'role');
+        this.logger.info(`Loaded role content: ${JSON.stringify(loadedRole, null, 2)}`);
+        
+        if (loadedRole && loadedRole.content) {
+          prompt = loadedRole.content;
+        } else if (loadedRole && loadedRole.data) {
+          prompt = loadedRole.data;
+        }
+      } catch (loadError) {
+        this.logger.warn(`Failed to load role content: ${loadError}`);
+        
+        // 如果 loadResource 失败，尝试直接从文件读取
+        if (role.resourcePath || role.path) {
+          try {
+            const fs = await import('fs');
+            const path = await import('path');
+            
+            const rolePath = role.resourcePath || role.path;
+            this.logger.info(`Trying to read role file: ${rolePath}`);
+            
+            if (fs.existsSync(rolePath)) {
+              const fileContent = fs.readFileSync(rolePath, 'utf-8');
+              this.logger.info(`File content length: ${fileContent.length}`);
+              
+              // 如果是 DPML 格式，提取 prompt 部分
+              if (fileContent.includes('```prompt')) {
+                const promptMatch = fileContent.match(/```prompt\s*([\s\S]*?)\s*```/);
+                if (promptMatch) {
+                  prompt = promptMatch[1].trim();
+                  this.logger.info(`Extracted prompt from DPML: ${prompt.substring(0, 200)}...`);
+                }
+              } else {
+                // 直接使用文件内容
+                prompt = fileContent;
+                this.logger.info(`Using file content directly: ${prompt.substring(0, 200)}...`);
+              }
+            } else {
+              this.logger.warn(`Role file does not exist: ${rolePath}`);
+            }
+          } catch (fileError) {
+            this.logger.error(`Failed to read role file: ${fileError}`);
+          }
+        }
+      }
+      
+      // 从提示词中提取结构化信息
+      if (prompt && prompt !== '暂无提示词内容') {
+        // 提取能力标签
+        const capabilityMatch = prompt.match(/能力[:：]([^\n]+)/);
+        if (capabilityMatch) {
+          capabilities = capabilityMatch[1].split(/[,，、]/).map((c: string) => c.trim()).filter((c: string) => c);
+        }
+        
+        // 提取使用示例
+        const exampleMatches = prompt.match(/示例[:：]([^\n]+)/g);
+        if (exampleMatches) {
+          examples = exampleMatches.map((match: string) => 
+            match.replace(/示例[:：]/, '').trim()
+          );
+        }
+        
+        // 提取版本信息
+        const versionMatch = prompt.match(/版本[:：]([^\n]+)/);
+        if (versionMatch) {
+          version = versionMatch[1].trim();
+        }
+      }
+      
+      return {
+        id: roleId,
+        name: role.name || role.title || roleId,
+        description: role.description || 'No description',
+        source: this.normalizeResourceSource(role.source || source),
+        prompt: prompt,
+        capabilities: capabilities,
+        examples: examples,
+        version: version,
+        activateCommand: `action("${roleId}")`
+      };
+      
+    } catch (error: any) {
+      this.logger.error(`Failed to get role from resource manager: ${error.message}`);
+      throw new Error(`Failed to get role details: ${error.message}`);
     }
   }
 

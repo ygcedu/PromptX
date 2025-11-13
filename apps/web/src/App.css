@@ -1,123 +1,71 @@
-/* App.css */
 .app {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  @apply min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-zinc-900;
 }
 
-
-
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+  @apply max-w-6xl mx-auto px-5;
 }
 
 .card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
+  @apply bg-white rounded-2xl p-6 shadow-xl border border-gray-200 mb-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300;
 }
 
 .btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
+  @apply px-4 py-2 border-0 rounded-xl font-medium cursor-pointer transition-all duration-200 no-underline inline-block text-center;
 }
 
 .btn-primary {
-  background: #667eea;
-  color: white;
-}
-
-.btn-primary:hover {
-  background: #5a6fd8;
-  transform: translateY(-1px);
+  @apply bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5;
 }
 
 .btn-secondary {
-  background: #f8f9fa;
-  color: #495057;
-  border: 1px solid #dee2e6;
+  @apply bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:shadow-lg;
 }
 
-.btn-secondary:hover {
-  background: #e9ecef;
-}
-
-.grid {
-  display: grid;
-  gap: 24px;
+.custom-grid {
+  @apply grid gap-6;
 }
 
 .grid-2 {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  @apply grid-cols-1 md:grid-cols-2;
 }
 
 .grid-3 {
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
-
-.text-center {
-  text-align: center;
+  @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
 }
 
 .text-muted {
-  color: #6c757d;
+  @apply text-gray-500;
 }
 
 .mb-4 {
-  margin-bottom: 24px;
+  @apply mb-6;
 }
 
 .mt-4 {
-  margin-top: 24px;
+  @apply mt-6;
 }
 
 .badge {
-  display: inline-block;
-  padding: 4px 8px;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 4px;
-  background: #e9ecef;
-  color: #495057;
+  @apply inline-block px-2 py-1 text-xs font-medium rounded bg-gray-200 text-gray-700;
 }
 
 .badge-primary {
-  background: #667eea;
-  color: white;
+  @apply bg-primary-500 text-white;
 }
 
 .badge-success {
-  background: #28a745;
-  color: white;
+  @apply bg-green-500 text-white;
+}
+
+.badge-danger {
+  @apply bg-red-500 text-white;
 }
 
 .loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
+  @apply flex justify-center items-center p-10;
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  @apply w-10 h-10 border-4 border-gray-200 border-t-primary-500 rounded-full animate-spin;
 }
