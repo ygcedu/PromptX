@@ -13,16 +13,17 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import logger from '@promptx/logger'
 import { PromptXMCPServer } from '../servers/PromptXMCPServer.js'
-import packageJson from '../../package.json';
 
 // 创建主程序
 const program = new Command()
+
+const version = process.env.npm_package_version;
 
 // 设置程序信息
 program
   .name('@promptx/mcp-server')
   .description('PromptX MCP Server - Connect AI applications to PromptX')
-  .version(packageJson.version, '-v, --version', 'display version number')
+  .version(version, '-v, --version', 'display version number')
 
 // 默认命令 - 直接启动 MCP Server
 program
@@ -33,12 +34,12 @@ program
   .option('--debug', 'Enable debug mode', false)
   .action(async (options) => {
     try {
-      logger.info(chalk.cyan(`PromptX MCP Server v${packageJson.version}`))
+      logger.info(chalk.cyan(`PromptX MCP Server v${version}`))
 
       // 使用 PromptXMCPServer 统一启动
       await PromptXMCPServer.launch({
         transport: options.transport as 'stdio' | 'http',
-        version: packageJson.version,
+        version: version,
         port: parseInt(options.port),
         host: options.host,
         corsEnabled: options.cors,
