@@ -1,4 +1,4 @@
-import webdavStorage from './webdavStorage.js'
+import { createClient } from 'webdav'
 import { ensureDirPath } from "../utils/pathDebug.js"
 
 /**
@@ -7,8 +7,24 @@ import { ensureDirPath } from "../utils/pathDebug.js"
  */
 class FileManager {
   constructor() {
-    this.storage = webdavStorage.getStorage()
-    this.client = webdavStorage.getClient()
+    // WebDAV 配置
+    const webdavUrl = '/api/dav/'
+    const username = 'cccman'
+    const password = 'NSd7cXH548HVzsbj'
+    
+    console.log('WebDAV URL:', webdavUrl, '(统一代理模式)')
+    
+    // 创建 WebDAV 客户端
+    this.client = createClient(webdavUrl, {
+      username,
+      password,
+      // 代理模式下的配置
+      withCredentials: false,
+      maxRedirects: 5,
+      // 设置远程基础路径，告诉客户端实际的服务器路径结构
+      // 这样可以避免路径计算错误
+      remoteBasePath: '/dav'
+    })
   }
 
   /**
