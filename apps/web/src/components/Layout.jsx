@@ -9,6 +9,7 @@ function Layout({ children }) {
     const baseItems = [
       { name: '角色', href: '/roles', icon: '🎭', count: isReady && stats.totalRoles },
       { name: '工具', href: '/tools', icon: '🔧', count: isReady && stats.totalTools },
+      { name: '文件', href: '/files', icon: '📁' },
       { name: '状态', href: '/status', icon: '📊' },
     ]
     return baseItems

@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import Roles from './pages/Roles'
 import Tools from './pages/Tools'
 import Status from './pages/Status'
+import FileManagerPage from './pages/FileManagerPage'
 import './App.css'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/roles" element={<Roles />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/status" element={<Status />} />
+          <Route path="/files" element={<FileManagerPage />} />
         </Routes>
       </Layout>
     </PromptXProvider>
