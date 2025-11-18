@@ -3,7 +3,7 @@ import FileManager from '../components/FileManager.jsx'
 
 const FileManagerPage = () => {
   return (
-    <div className="h-full bg-gray-100">
+    <div className="h-full">
       <FileManager />
     </div>
   )

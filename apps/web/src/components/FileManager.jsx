@@ -31,7 +31,7 @@ const FileManager = () => {
   const [showCreateFile, setShowCreateFile] = useState(false)
   const [newFileName, setNewFileName] = useState('')
   const [newFileContent, setNewFileContent] = useState('')
-  
+
   // 新建文件夹状态
   const [showCreateFolder, setShowCreateFolder] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
@@ -74,10 +74,10 @@ const FileManager = () => {
       setLoading(true)
       // 使用路径工具构建完整路径
       const fullPath = buildFilePath(currentPath, newFileName)
-      
+
       console.log('📝 创建文件:', { currentPath, newFileName, fullPath })
       debugPath(fullPath, '创建文件')
-      
+
       await fileManager.createFile(fullPath, newFileContent)
       showSuccess(`文件 ${newFileName} 创建成功`)
       setShowCreateFile(false)
@@ -90,7 +90,7 @@ const FileManager = () => {
       setLoading(false)
     }
   }
-  
+
   // 创建文件夹
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) {
@@ -102,10 +102,10 @@ const FileManager = () => {
       setLoading(true)
       // 使用路径工具构建完整路径
       const fullPath = buildDirPath(currentPath, newFolderName)
-      
+
       console.log('📁 创建文件夹:', { currentPath, newFolderName, fullPath })
       debugPath(fullPath, '创建文件夹')
-      
+
       await fileManager.createDirectory(fullPath)
       showSuccess(`文件夹 ${newFolderName} 创建成功`)
       setShowCreateFolder(false)
@@ -128,7 +128,7 @@ const FileManager = () => {
     try {
       setLoading(true)
       console.log('🗑️ 删除项目:', { item, type: item.type, path: item.path })
-      
+
       if (item.type === 'directory') {
         await fileManager.deleteDirectory(item.path)
       } else {
@@ -198,19 +198,19 @@ const FileManager = () => {
   }
 
   // 下载文件
-  const handleDownloadFile = async (filename) => {
+  const handleDownloadFile = async (filePath, fileName) => {
     try {
-      const content = await fileManager.readFile(filename)
+      const content = await fileManager.readFile(filePath)
       const blob = new Blob([content], { type: 'text/plain' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = filename
+      a.download = fileName
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      showSuccess(`文件 ${filename} 下载成功`)
+      showSuccess(`文件 ${fileName} 下载成功`)
     } catch (err) {
       setError(err.message)
     }
@@ -228,10 +228,10 @@ const FileManager = () => {
           reader.onload = (e) => {
             // 使用路径工具构建完整路径
             const fullPath = buildFilePath(currentPath, file.name)
-            
+
             console.log('📤 上传文件:', { fileName: file.name, currentPath, fullPath })
             debugPath(fullPath, '上传文件')
-            
+
             resolve({
               name: fullPath,
               content: e.target.result
@@ -279,28 +279,28 @@ const FileManager = () => {
   // 处理文件夹点击
   const handleFolderClick = (folder) => {
     console.log('📂 点击文件夹:', { folder, currentPath })
-    
+
     // 使用路径工具确保目录路径格式正确
     const newPath = ensureDirPath(folder.path)
-    
+
     console.log('📂 导航到:', newPath)
     debugPath(newPath, '文件夹导航')
-    
+
     loadFiles(newPath)
   }
 
   // 处理返回上级目录
   const handleGoBack = () => {
     if (currentPath === '/') return
-    
+
     console.log('⬆️ 返回上级目录，当前路径:', currentPath)
-    
+
     // 使用路径工具计算上级目录
     const parentPath = getParentPath(currentPath)
-    
+
     console.log('⬆️ 导航到上级目录:', parentPath)
     debugPath(parentPath, '上级目录')
-    
+
     loadFiles(parentPath)
   }
 
@@ -474,7 +474,7 @@ const FileManager = () => {
                                 <Edit className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => handleDownloadFile(file.path)}
+                                onClick={() => handleDownloadFile(file.path, file.name)}
                                 className="p-1 text-green-500 hover:bg-green-100 rounded"
                                 title="下载"
                               >
