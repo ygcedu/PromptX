@@ -305,8 +305,8 @@ const FileManager = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="bg-white rounded-lg shadow-lg">
+    <div className="h-full p-4">
+      <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
         {/* 头部 */}
         <div className="border-b border-gray-200 p-4">
           <div className="flex items-center justify-between mb-4">
@@ -408,7 +408,7 @@ const FileManager = () => {
         )}
 
         {/* 文件列表 */}
-        <div className="p-4">
+        <div className="flex-1 p-4 overflow-hidden flex flex-col">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <RefreshCw className="w-6 h-6 animate-spin mr-2" />
@@ -419,7 +419,7 @@ const FileManager = () => {
               {searchKeyword ? '没有找到匹配的文件' : '目录为空'}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="flex-1 overflow-auto">
               <table className="w-full table-auto">
                 <thead>
                   <tr className="bg-gray-50">

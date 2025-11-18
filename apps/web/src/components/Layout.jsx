@@ -16,8 +16,8 @@ function Layout({ children }) {
   }
 
   return (
-    <div className="app">
-      <nav className="bg-white/10 backdrop-blur-md border-b border-white/20 py-4">
+    <div className="app min-h-screen flex flex-col">
+      <nav className="bg-white/10 backdrop-blur-md border-b border-white/20 py-4 flex-shrink-0">
         <div className="container">
           <div className="flex justify-between items-center">
             <Link 
@@ -55,13 +55,11 @@ function Layout({ children }) {
         </div>
       </nav>
       
-      <main className="py-10">
-        <div className="container">
-          {children}
-        </div>
+      <main className="flex-1 overflow-hidden">
+        {children}
       </main>
       
-      <footer className="bg-black/10 text-white/80 py-6 text-center mt-auto">
+      <footer className="bg-black/10 text-white/80 py-6 text-center flex-shrink-0">
         <div className="container">
           <p>© 2024 Deepractice. PromptX v{__APP_VERSION__ || '1.25.2'}</p>
         </div>
