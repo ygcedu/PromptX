@@ -12,7 +12,9 @@ import {
   Search,
   RefreshCw,
   Save,
-  X
+  X,
+  ChevronRight,
+  Home
 } from 'lucide-react'
 
 const FileManager = () => {
@@ -35,6 +37,10 @@ const FileManager = () => {
   // 新建文件夹状态
   const [showCreateFolder, setShowCreateFolder] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
+
+  // 路径编辑状态
+  const [isEditingPath, setIsEditingPath] = useState(false)
+  const [editingPathValue, setEditingPathValue] = useState('')
 
   // 加载文件列表
   const loadFiles = async (path = '/') => {
@@ -290,18 +296,66 @@ const FileManager = () => {
   }
 
   // 处理返回上级目录
-  const handleGoBack = () => {
-    if (currentPath === '/') return
+  // 路径导航相关函数
 
-    console.log('⬆️ 返回上级目录，当前路径:', currentPath)
+  // 分解路径为段落
+  const getPathSegments = (path) => {
+    if (path === '/') return [{ name: '根目录', path: '/' }]
 
-    // 使用路径工具计算上级目录
-    const parentPath = getParentPath(currentPath)
+    const segments = [{ name: '根目录', path: '/' }]
+    const parts = path.split('/').filter(part => part !== '')
 
-    console.log('⬆️ 导航到上级目录:', parentPath)
-    debugPath(parentPath, '上级目录')
+    let currentPath = ''
+    parts.forEach(part => {
+      currentPath += '/' + part
+      segments.push({ name: part, path: currentPath })
+    })
 
-    loadFiles(parentPath)
+    return segments
+  }
+
+  // 点击路径段落
+  const handlePathSegmentClick = (path) => {
+    if (path !== currentPath) {
+      loadFiles(path)
+    }
+  }
+
+  // 开始编辑路径
+  const handleStartEditPath = () => {
+    setIsEditingPath(true)
+    setEditingPathValue(currentPath)
+  }
+
+  // 取消编辑路径
+  const handleCancelEditPath = () => {
+    setIsEditingPath(false)
+    setEditingPathValue('')
+  }
+
+  // 确认编辑路径
+  const handleConfirmEditPath = () => {
+    const newPath = editingPathValue.trim() || '/'
+    setIsEditingPath(false)
+    setEditingPathValue('')
+
+    if (newPath !== currentPath) {
+      loadFiles(newPath)
+    }
+  }
+
+  // 路径输入框事件处理
+  const handlePathInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleConfirmEditPath()
+    } else if (e.key === 'Escape') {
+      handleCancelEditPath()
+    }
+  }
+
+  // 路径输入框失去焦点
+  const handlePathInputBlur = () => {
+    handleCancelEditPath()
   }
 
   return (
@@ -379,18 +433,52 @@ const FileManager = () => {
             )}
           </div>
 
-          {/* 当前路径和导航 */}
-          <div className="mt-2 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              当前路径: {currentPath}
-            </div>
-            {currentPath !== '/' && (
-              <button
-                onClick={handleGoBack}
-                className="text-sm text-blue-500 hover:text-blue-700 flex items-center"
+          {/* 路径导航栏 */}
+          <div className="mt-2">
+            {isEditingPath ? (
+              // 编辑模式
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={editingPathValue}
+                  onChange={(e) => setEditingPathValue(e.target.value)}
+                  onKeyDown={handlePathInputKeyDown}
+                  onBlur={handlePathInputBlur}
+                  className="w-full p-2 text-sm border border-gray-300 rounded bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                  style={{ lineHeight: '24px' }}
+                  placeholder="输入路径，回车确认..."
+                  autoFocus
+                />
+              </div>
+            ) : (
+              // 显示模式
+              <div
+                className="flex items-center space-x-1 p-2 bg-gray-50 rounded border cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={handleStartEditPath}
+                title="点击编辑路径"
               >
-                ← 返回上级目录
-              </button>
+                {getPathSegments(currentPath).map((segment, index, array) => (
+                  <React.Fragment key={segment.path}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handlePathSegmentClick(segment.path)
+                      }}
+                      className="flex items-center px-2 py-1 text-sm text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                      title={`跳转到: ${segment.path}`}
+                    >
+                      {index === 0 ? (
+                        <Home className="w-4 h-4" />
+                      ) : (
+                        segment.name
+                      )}
+                    </button>
+                    {index < array.length - 1 && (
+                      <ChevronRight className="w-3 h-3 text-gray-400" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
             )}
           </div>
         </div>
