@@ -7,7 +7,7 @@
 }
 
 .card {
-  @apply bg-white rounded-2xl p-6 shadow-xl border border-gray-200 mb-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300;
+  @apply bg-white rounded-2xl p-6 shadow-xl border border-gray-200 mb-6 hover:shadow-2xl transition-shadow duration-200;
 }
 
 .btn {
@@ -15,7 +15,7 @@
 }
 
 .btn-primary {
-  @apply bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5;
+  @apply bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg transition-all duration-200;
 }
 
 .btn-secondary {
